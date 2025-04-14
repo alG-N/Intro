@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>alterGolden's World</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/png" href="goldstar.png">
+</head>
+
+<body>
+
+    <!-- Home Page -->
+    <div class="container fade-in" id="home-page">
+        <h1>Hey, I'm <span id="alterText">alterGolden!</span> 👋</h1>
+        <p id="intro">
+            <span class="tag" onclick="navigateTo('gamer-page')">Gamer 🎮</span> |
+            <span class="tag" onclick="navigateTo('artist-page')">Artist 🎨</span> |
+            <span class="tag" onclick="navigateTo('coder-page')">Coder 🤖</span> |
+            <span class="tag" onclick="navigateTo('anime-page')">Anime 📙</span> |
+            <span class="tag" onclick="navigateTo('music-page')">JP Music 🎶</span>
+        </p>
+        
+        <h2>✨ Fun Fact About Me ✨</h2>
+        <ul id="facts-list"></ul>
+
+        <div class="sponsor-section">
+            <h2>🚀 Check This Out!</h2>
+            <p>🌟 Meet my Discord Bot: <strong>FumoBOT</strong> 🤖</p>
+
+            <div class="app-buttons">
+                <button class="btn" onclick="navigateTo('fumo-page')">See FumoBOT</button>
+            </div>
+        </div>
+
+        <p>Find me on <a href="https://discord.gg/yourdiscordlink" target="_blank">Discord</a>.</p>
+    </div>
+
+    <div class="alter-container">
+        <img src="alterGolden.png" id="alterGolden">
+        <div class="alter-caption">
+            <div class="caption-text">This is alterGolden or me :D</div>
+            <img src="Arrow-Down-PNG-File.png" class="arrow-img" alt="arrow">
+        </div>
+    </div>    
+    <img src="alterGolden2.png" id="alterGolden2">
+
+    <!-- FumoBOT Page -->
+    <div class="container fade-in hidden" id="fumo-page">
+        <h2>🤖 Welcome to my FumoBOT!</h2>
+
+        <p>FumoBOT is a fun and interactive Discord bot where you can <strong>gamble to collect cool items</strong>—kind
+            of like a <em>gacha game</em>! Try your luck, build your collection, and enjoy regular updates and new
+            features!</p>
+
+        <p><strong>Introduction:</strong></p>
+        <ul>
+            <li>• How to use the bot? → <code>/starter</code></li>
+            <li>• How do you use the command? → <code>/tutorial</code></li>
+            <li>• Problem? Use <code>/report</code> and file it</li>
+            <li>• The bot will always receive updates every week! 🚀</li>
+            <li>• Special thanks to my friends: <strong>Hosuh, Frederick, NormalGuy</strong> for testing it out!</li>
+            <li>• ⚠️ Don't Gamble TOO much!</li>
+        </ul>
+
+        <p>
+            <a href="https://discord.com/api/oauth2/authorize?client_id=YOUR_BOT_ID&permissions=8&scope=bot%20applications.commands"
+                target="_blank" class="btn">Invite FumoBOT</a>
+        </p>
+
+        <button class="btn" onclick="navigateTo('home-page')">Back</button>
+    </div>
+
+    <!-- Gamer Page -->
+    <div class="container fade-in hidden" id="gamer-page">
+        <h2>🎮 Currently Playing</h2>
+        <p class="subtext">Hover over a game to see what I'm up to 👀</p>
+    
+        <div class="game-grid">
+            <!-- Game Card Example -->
+            <div class="game-card">
+                <img src="roblox.webp" alt="Roblox">
+                <div class="game-info">
+                    <h3>Roblox</h3>
+                    <p>Status: Grinding Anime TD Game! 🧱</p>
+                    <p>Favorite Game: Blox Fruit</p>
+                </div>
+            </div>
+            
+            <div class="game-card">
+                <img src="bluearchive.png" alt="Blue Archive">
+                <div class="game-info">
+                    <h3>Blue Archive</h3>
+                    <p>Status: Waiting for Story... 📚</p>
+                    <p>Favorite Student: Everyone!</p>
+                    <p>My Wife: Kisaki</p>
+                </div>
+            </div>
+            
+            <div class="game-card">
+                <img src="zzz.png" alt="Zenless Zone Zero">
+                <div class="game-info">
+                    <h3>Zenless Zone Zero</h3>
+                    <p>Status: Content-cleared ⚡</p>
+                    <p>Favorite Agent: Anby 👀</p>
+                </div>
+            </div>
+            
+            <div class="game-card">
+                <img src="genshin.png" alt="Genshin Impact">
+                <div class="game-info">
+                    <h3>Genshin Impact</h3>
+                    <p>Status: Main Story-Cleared ⚡</p>
+                    <p>Main DPS: Neuvilette 🌊</p>
+                </div>
+            </div>
+            
+            <div class="game-card">
+                <img src="starrail.png" alt="Honkai: Star Rail">
+                <div class="game-info">
+                    <h3>Honkai: Star Rail</h3>
+                    <p>Status: Struggling with Story 🚆</p>
+                    <p>Favorite Unit: Jingliu ❄️</p>
+                </div>
+            </div>
+            
+            <div class="game-card">
+                <img src="osu.png" alt="osu!">
+                <div class="game-info">
+                    <h3>osu!</h3>
+                    <p>Status: Training accuracy 🔴</p>
+                    <p>Mode: osu!Mania</p>
+                </div>
+            </div>            
+            <!-- Add more games as needed -->
+        </div>
+    
+        <button class="btn back-btn" onclick="navigateTo('home-page')">⬅ Back</button>
+    </div>
+    
+    <!-- Artist Page -->
+    <div class="container fade-in hidden" id="artist-page">
+        <h2>🎨 Art Zone</h2>
+        <p>From pixel doodles to full digital pieces — I just love creating stuff visually.</p>
+        <button class="btn" onclick="navigateTo('home-page')">⬅ Back</button>
+    </div>
+
+    <!-- Coder Page -->
+    <div class="container fade-in hidden" id="coder-page">
+        <h2>🤖 Coding Corner</h2>
+        <p>Sometimes it’s bots. Sometimes it’s just making random fun scripts or trying new languages!</p>
+        <button class="btn" onclick="navigateTo('home-page')">⬅ Back</button>
+    </div>
+
+    <!-- Anime Page -->
+    <div class="container fade-in hidden" id="anime-page">
+        <h2>📙 Anime & Manga Life</h2>
+        <p>Whether it's deep stories or chaotic fun, anime and manga are my happy place.</p>
+        <button class="btn" onclick="navigateTo('home-page')">⬅ Back</button>
+    </div>
+
+    <!-- JP Music Page -->
+    <div class="container fade-in hidden" id="music-page">
+        <h2>🎶 Just cool remix - Japan type Beats</h2>
+        <p>From opening themes to deep cuts, if it’s Japanese music, it’s probably on my playlist.</p>
+        <button class="btn" onclick="navigateTo('home-page')">⬅ Back</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
