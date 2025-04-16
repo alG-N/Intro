@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <title>alterGolden's World</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="icon" type="image/png" href="goldstar.png">
+    <link rel="icon" type="image/png" href="./Source/goldstar.png">
 </head>
 
 <body>
@@ -37,13 +37,13 @@
     </div>
 
     <div class="alter-container">
-        <img src="alterGolden.png" id="alterGolden">
+        <img src="./Source/alterGolden.png" id="alterGolden">
         <div class="alter-caption">
             <div class="caption-text">This is alterGolden or me :D</div>
             <img src="Arrow-Down-PNG-File.png" class="arrow-img" alt="arrow">
         </div>
     </div>
-    <img src="alterGolden2.png" id="alterGolden2">
+    <img src="./Source/alterGolden2.png" id="alterGolden2">
 
     <!-- FumoBOT Page -->
     <div class="container fade-in hidden" id="fumo-page">
@@ -78,7 +78,7 @@
 
         <div class="game-grid">
             <div class="game-card">
-                <img src="roblox.webp" alt="Roblox">
+                <img src="./Source/roblox.webp" alt="Roblox">
                 <div class="game-info">
                     <h3>Roblox</h3>
                     <p>Status: Grinding Anime TD Game! 🧱</p>
@@ -87,7 +87,7 @@
             </div>
 
             <div class="game-card">
-                <img src="bluearchive.png" alt="Blue Archive">
+                <img src="./Source/bluearchive.png" alt="Blue Archive">
                 <div class="game-info">
                     <h3>Blue Archive</h3>
                     <p>Status: Waiting for Story... 📚</p>
@@ -97,7 +97,7 @@
             </div>
 
             <div class="game-card">
-                <img src="zzz.png" alt="Zenless Zone Zero">
+                <img src="./Source/zzz.png" alt="Zenless Zone Zero">
                 <div class="game-info">
                     <h3>Zenless Zone Zero</h3>
                     <p>Status: Content-cleared ⚡</p>
@@ -106,7 +106,7 @@
             </div>
 
             <div class="game-card">
-                <img src="genshin.png" alt="Genshin Impact">
+                <img src="./Source/genshin.png" alt="Genshin Impact">
                 <div class="game-info">
                     <h3>Genshin Impact</h3>
                     <p>Status: Main Story-Cleared ⚡</p>
@@ -115,7 +115,7 @@
             </div>
 
             <div class="game-card">
-                <img src="starrail.png" alt="Honkai: Star Rail">
+                <img src="./Source/starrail.png" alt="Honkai: Star Rail">
                 <div class="game-info">
                     <h3>Honkai: Star Rail</h3>
                     <p>Status: Struggling with Story 🚆</p>
@@ -124,7 +124,7 @@
             </div>
 
             <div class="game-card">
-                <img src="osu.png" alt="osu!">
+                <img src="./Source/osu.png" alt="osu!">
                 <div class="game-info">
                     <h3>osu!</h3>
                     <p>Status: Training accuracy 🔴</p>
@@ -173,9 +173,28 @@
     <!-- Anime Page -->
     <div class="container fade-in hidden" id="anime-page">
         <h2>📙 Anime & Manga Life</h2>
-        <p>Whether it's deep stories or chaotic fun, anime and manga are my happy place.</p>
+        <p class="anime-intro">
+            Whether it's deep stories or chaotic fun, anime and manga are my happy place.
+        </p>
+
+        <div class="anime-banner-card">
+            <div class="character-float">
+                <img src="/Source/gojo.png" alt="Gojo Satoru">
+            </div>
+            <div class="anime-banner" style="background-image: url('./Source/jjk.jpg');">
+                <div class="anime-info">
+                    <h3>Jujutsu Kaisen</h3>
+                    <p>Status: Finished</p>
+                    <p>Genres: Action, Supernatural</p>
+                </div>
+            </div>
+        </div>
+
+        <br>
         <button class="btn" onclick="navigateTo('home-page')">⬅ Back</button>
     </div>
+    
+    
 
     <!-- JP Music Page -->
     <div class="container fade-in hidden" id="music-page">

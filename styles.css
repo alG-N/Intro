@@ -363,3 +363,106 @@ ul li:hover {
     }
 }
 
+.anime-banner-card {
+    position: relative;
+    width: 220px;
+    height: 320px;
+    border: 2px solid #222;
+    border-radius: 12px;
+    overflow: visible; /* allow character to float outside */
+    cursor: pointer;
+    background: #000;
+    transition: transform 0.3s ease;
+    margin-top: 60px; /* to give space for floating image */
+}
+
+.anime-banner {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Dark overlay on hover */
+.anime-banner::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 1;
+}
+
+/* Anime details centered */
+.anime-info {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    padding: 1rem;
+    z-index: 2;
+    color: #fff;
+    font-size: 0.95rem;
+    font-family: 'Segoe UI', sans-serif;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.anime-info h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+    color: #ffd369;
+}
+
+.anime-info p {
+    margin: 0.3rem 0;
+    color: #eee;
+}
+
+/* Character image floating */
+.character-float {
+    position: absolute;
+    top: -60px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90px;
+    height: 90px;
+    opacity: 0;
+    z-index: 10;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.character-float img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 4px solid #fff;
+    background-color: #fff;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+}
+
+/* Hover triggers */
+.anime-banner-card:hover .anime-banner::before {
+    opacity: 1;
+}
+
+.anime-banner-card:hover .character-float {
+    opacity: 1;
+}
+
+.anime-banner-card:hover .anime-info {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.05);
+}
+
+
+
