@@ -464,5 +464,92 @@ ul li:hover {
     transform: translate(-50%, -50%) scale(1.05);
 }
 
+.anime-grid {
+    display: flex;
+    flex-wrap: nowrap; /* Keep items in one line */
+    overflow-x: auto;  /* Enable horizontal scroll */
+    gap: 2rem;
+    padding: 2rem 0;
+    scroll-snap-type: x mandatory; /* Optional: smooth snap to each card */
+}
+
+.anime-banner-card {
+    flex: 0 0 auto; /* Prevent shrinking, keep cards at natural width */
+    scroll-snap-align: start; /* Optional: align cards nicely on scroll */
+}
+
+.anime-grid::-webkit-scrollbar {
+    height: 8px;
+}
+
+.anime-grid::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.anime-grid::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.anime-intro {
+    position: relative;
+    font-size: 1.25rem;
+    font-style: italic;
+    color: #444;
+    text-align: center;
+    margin: 2rem auto;
+    max-width: 600px;
+    line-height: 1.6;
+    padding: 1.5rem 2rem;
+    background: linear-gradient(to right, #fff8f0, #ffeaea);
+    border-radius: 1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+}
+
+.petal {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: url('https://pnghq.com/wp-content/uploads/2023/02/flower-petal-transparent-background-png-7874.png') no-repeat center center / contain;
+    pointer-events: none;
+    opacity: 0.7;
+    animation: blow 5s linear infinite;
+}
+
+@keyframes blow {
+    0% {
+        transform: translate(0, 0) rotate(0deg);
+        opacity: 0.9;
+    }
+    25% {
+        transform: translate(80px, 150px) rotate(60deg);
+    }
+    50% {
+        transform: translate(-120px, 300px) rotate(120deg);
+    }
+    75% {
+        transform: translate(100px, 450px) rotate(240deg);
+    }
+    100% {
+        transform: translate(-80px, 600px) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.anime-intro {
+    animation: fadeInUp 0.8s ease-out;
+}
 
 

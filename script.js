@@ -41,5 +41,37 @@ function navigateTo(pageId) {
     document.getElementById(pageId).classList.remove('hidden');
 }
 
+const animeGrid = document.querySelector('.anime-grid');
 
+animeGrid.addEventListener('wheel', function (e) {
+    if (e.deltaY !== 0) {
+        e.preventDefault(); // Prevent vertical scroll
+        animeGrid.scrollLeft += e.deltaY; // Scroll horizontally instead
+    }
+}, { passive: false });
   
+const intro = document.querySelector('.anime-intro');
+let petalInterval;
+
+intro.addEventListener('mouseenter', () => {
+    if (petalInterval) return; // Prevent multiple intervals
+    petalInterval = setInterval(() => {
+        const petal = document.createElement('span');
+        petal.classList.add('petal');
+        petal.style.top = '-20px';
+        petal.style.left = `${Math.random() * 500}px`; // random horizontal spread within ~100px of top-left
+        petal.style.transform = `rotate(${Math.random() * 360}deg)`; // random initial rotation
+        petal.style.animationDuration = `${5 + Math.random() * 2}s`; // slow, gentle fall        
+        intro.appendChild(petal);
+
+        // Remove petal after its animation ends
+        setTimeout(() => {
+            petal.remove();
+        }, 6000);
+    }, 900); // controls how often petals spawn
+});
+
+intro.addEventListener('mouseleave', () => {
+    clearInterval(petalInterval);
+    petalInterval = null;
+});
