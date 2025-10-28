@@ -49,26 +49,27 @@
     <div class="container fade-in hidden" id="fumo-page">
         <h2>🤖 Welcome to my FumoBOT!</h2>
 
-        <p>FumoBOT is a fun and interactive Discord bot where you can <strong>gamble to collect cool fumo</strong>—kind
+        <p class="fumo-description">FumoBOT is a fun and interactive Discord bot where you can <strong>gamble to collect cool fumo</strong>—kind
             of like a <em>gacha game</em>! Try your luck, build your collection, and enjoy regular updates and new
             features!</p>
 
-        <p><strong>Introduction:</strong></p>
-        <ul>
-            <li>• How to use the bot? → <code>/starter</code></li>
-            <li>• How do you use the command? → <code>/tutorial</code></li>
-            <li>• Problem? Use <code>/report</code> and file it</li>
-            <li>• The bot will always receive updates every month! 🚀</li>
-            <li>• Special thanks to my friends: <strong>Hosuh, Frederick, NormalGuy</strong> for testing it out!</li>
-            <li>• ⚠️ Don't Gamble TOO much guys!!!</li>
-        </ul>
+        <div class="fumo-intro-section">
+            <h3>Introduction:</h3>
+            <ul class="fumo-list">
+                <li>• How to use the bot? → <code>/starter</code></li>
+                <li>• How do you use the command? → <code>/tutorial</code></li>
+                <li>• Problem? Use <code>/report</code> and file it</li>
+                <li>• The bot will always receive updates every month! 🚀</li>
+                <li>• Special thanks to my friends: <strong>Hosuh, Frederick, NormalGuy</strong> for testing it out!</li>
+                <li>• ⚠️ Don't Gamble TOO much guys!!!</li>
+            </ul>
+        </div>
 
-        <p>
+        <div class="fumo-buttons">
             <a href="https://discord.com/oauth2/authorize?client_id=1254962096924397569&permissions=182273&integration_type=0&scope=bot"
-                target="_blank" class="btn">Invite FumoBOT</a>
-        </p>
-
-        <button class="btn" onclick="navigateTo('home-page')">Back</button>
+                target="_blank" class="btn btn-primary">Invite FumoBOT</a>
+            <button class="btn btn-secondary" onclick="navigateTo('home-page')">Back</button>
+        </div>
     </div>
 
     <!-- Gamer Page -->
@@ -140,7 +141,7 @@
     <!-- Artist Page -->
     <div class="container fade-in hidden" id="artist-page">
         <h2>🎨 Art Zone</h2>
-        <p>From pixel doodles to full digital pieces — I just love creating stuff visually.</p>
+        <p>From pixel doodles to full digital pieces – I just love creating stuff visually.</p>
         <button class="btn" onclick="navigateTo('home-page')">Back</button>
     </div>
 
@@ -150,14 +151,14 @@
         <p>
             I'm a passionate backend developer with a strong focus on JavaScript and related technologies.
             I also enjoy crafting clean and responsive interfaces using HTML and CSS.
-            Whether it's building bots, writing fun scripts, or exploring new languages, I’m always coding something
+            Whether it's building bots, writing fun scripts, or exploring new languages, I'm always coding something
             interesting!
         </p>
 
         <div class="fumo-bot-ad">
             <h3>🎲 FumoBOT – Your Fumo Collector</h3>
             <p>
-                Dive into a world of luck, strategy, and chaos with FumoBOT — an interactive Discord bot where you
+                Dive into a world of luck, strategy, and chaos with FumoBOT – an interactive Discord bot where you
                 collect rare fumo, roll for surprises, and enjoy monthly updates. Built for fun, built to grow!
             </p>
             <div class="app-buttons">
@@ -207,7 +208,7 @@
 
             <div class="anime-banner-card">
                 <div class="character-float">
-                    <img src="./Source/sjw.png" alt="Gojo Satoru">
+                    <img src="./Source/sjw.png" alt="Sung Jinwoo">
                 </div>
                 <div class="anime-banner" style="background-image: url('./Source/sololeveling.jpg');">
                     <div class="anime-info">
@@ -227,7 +228,7 @@
     <!-- JP Music Page -->
     <div class="container fade-in hidden" id="music-page">
         <h2>🎶 Just cool remix - Japan type Beats</h2>
-        <p>From opening themes to deep cuts, if it’s Japanese music, it’s probably on my playlist.</p>
+        <p>From opening themes to deep cuts, if it's Japanese music, it's probably on my playlist.</p>
         <button class="btn" onclick="navigateTo('home-page')">Back</button>
     </div>
 
