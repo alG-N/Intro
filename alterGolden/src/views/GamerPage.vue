@@ -319,6 +319,121 @@
                       </div>
                     </div>
                   </div>
+
+                  <!-- FC Repair Success Progress -->
+                  <div v-if="fcAttemptInProgress" class="fc-repair-screen">
+                    <div class="fc-repair-header">FC-Re DEEP REPAIR</div>
+                    <div class="fc-repair-progress">{{ fcRepairProgress }}%</div>
+                    <div class="fc-repair-bar">
+                      <div class="fc-repair-fill" :style="{ width: fcRepairProgress + '%' }"></div>
+                    </div>
+                    <div class="fc-repair-console">
+                      <div v-for="(msg, i) in fcRepairMessages" :key="'fcr-' + i" class="fc-msg">{{ msg }}</div>
+                    </div>
+                  </div>
+
+                  <!-- FC Repair Fail - Binary Rain + Hack Messages -->
+                  <div v-if="fcRainActive" class="fc-rain-screen">
+                    <div class="binary-rain-container">
+                      <div v-for="n in 40" :key="'rain-' + n" class="rain-column" :style="{
+                        left: (n * 2.5) + '%',
+                        animationDelay: (Math.random() * 2) + 's',
+                        animationDuration: (2 + Math.random() * 2) + 's'
+                      }">
+                        <div class="rain-chars">
+                          {{ generateBinaryColumn() }}
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- FIXED: Title stays at top -->
+                    <div class="hack-title-fixed">⚠ SYSTEM COMPROMISED ⚠</div>
+
+                    <!-- Desktop with opening windows simulation -->
+                    <div class="hack-desktop">
+                      <!-- Simulated Windows being opened -->
+                      <div v-for="win in hackingWindows" :key="'hack-' + win.id" class="hacking-window" :style="{
+                        left: win.x + 'px',
+                        top: win.y + 'px',
+                        width: win.width + 'px',
+                        height: win.height + 'px',
+                        zIndex: win.zIndex
+                      }">
+                        <div class="hacking-titlebar">
+                          <span class="hacking-icon">{{ win.icon }}</span>
+                          <span class="hacking-title">{{ win.title }}</span>
+                        </div>
+                        <div class="hacking-content">
+                          <div v-for="(line, i) in win.lines" :key="'line-' + i" class="hacking-line">
+                            {{ line }}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Crash popup appears after 20s -->
+                    <div v-if="showCrashPopup" class="crash-popup">
+                      <div class="crash-popup-titlebar">
+                        <span>❌ alterGolden.exe - Application Error</span>
+                      </div>
+                      <div class="crash-popup-content">
+                        <div class="crash-icon">⚠️</div>
+                        <div class="crash-message">
+                          <div class="crash-text-main">alterGolden.exe has stopped working</div>
+                          <div class="crash-text-sub">A problem caused the program to stop working correctly.</div>
+                          <div class="crash-text-sub">Windows will close the program and notify you if a solution is
+                            available.</div>
+                        </div>
+                      </div>
+                      <div class="crash-popup-buttons">
+                        <button class="crash-btn" @click="terminateCrash">OK</button>
+                        <button class="crash-btn-cancel" @click="terminateCrash">Cancel</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Terminate Screen (moved here from bottom) -->
+                  <div v-if="terminationMode" class="terminate-screen">
+                    <div class="terminate-content">
+                      <div class="terminate-title">⚠ CRITICAL SYSTEM FAILURE ⚠</div>
+                      <div class="terminate-subtitle">Emergency termination protocol activated</div>
+                      <div class="terminate-desc">Answer each question carefully. Type Y or N, then press ENTER.</div>
+
+                      <div class="terminate-questions-wrapper">
+                        <div class="terminate-questions">
+                          <!-- Show previous answered questions -->
+                          <div v-for="(answer, i) in fcAnswers" :key="'answered-' + i" class="term-question answered">
+                            <div class="term-q-number">Question {{ i + 1 }}/5</div>
+                            <div class="term-q-text">{{ fcQuestions[i] }}</div>
+                            <div class="term-q-answer">
+                              <span class="answer-label">Your answer:</span>
+                              <span class="answer-value" :class="answer === 'Y' ? 'answer-yes' : 'answer-no'">
+                                {{ answer === 'Y' ? 'YES' : 'NO' }}
+                              </span>
+                            </div>
+                          </div>
+
+                          <!-- Current question being answered -->
+                          <div v-if="fcCurrentQuestion < 5" class="term-question current">
+                            <div class="term-q-number">Question {{ fcCurrentQuestion + 1 }}/5</div>
+                            <div class="term-q-text">{{ fcQuestions[fcCurrentQuestion] }}</div>
+                            <div class="term-input-area">
+                              <span class="input-prompt">&gt;</span>
+                              <span class="input-text">{{ fcTypedAnswer }}</span>
+                              <span class="input-cursor blink">_</span>
+                            </div>
+                            <div class="term-hint">Type Y or N, then press ENTER</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="terminate-progress">
+                        Answered: {{ fcAnswers.length }}/5
+                      </div>
+                      <div class="terminate-warning">System functions locked until protocol completes</div>
+                    </div>
+                  </div>
+
                 </div>
 
                 <!-- TV brand under screen -->
@@ -505,23 +620,6 @@
     <!-- flying clone container for insert animations -->
     <div class="flyer" ref="flyer"></div>
 
-    <!-- terminate overlay (binary FC-Re flow) -->
-    <div v-if="terminationMode" class="terminate-overlay">
-      <div class="terminate-card">
-        <div class="terminate-title">TERMINATE SEQUENCE</div>
-        <div class="terminate-desc">Critical failure encountered. Answer the following questions (Y/N)</div>
-        <div class="terminate-questions">
-          <div v-for="(q, i) in fcQuestions" :key="i" class="term-q">
-            <span class="q-text">{{ q }}</span>
-            <div class="q-choices">
-              <button @click="setQuestionAnswer(i, 'Y')">Y</button>
-              <button @click="setQuestionAnswer(i, 'N')">N</button>
-            </div>
-          </div>
-        </div>
-        <div class="terminate-note">Eject/Power/Quit disabled until resolved.</div>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -564,6 +662,20 @@ export default {
       startMenuOpen: false,  // Track if Windows start menu is open
       activeWindow: null,  // Track which window is focused
       windowsBooting: false,
+
+      // Corruption Lore
+      fcAttemptInProgress: false,
+      fcAttemptResult: null, // 'success' or 'fail'
+      fcRepairProgress: 0,
+      fcRepairMessages: [],
+      fcRainActive: false,
+      fcHackMessages: [],
+      fcCurrentQuestion: 0,  // Track which question we're on (0-4)
+      fcTypedAnswer: '',     // What user is typing for current question
+      hackingWindows: [],
+      showCrashPopup: false,
+      hackWindowIdCounter: 0,
+      _hackingInterval: null,
 
       // removed mouse mechanic; instead track simple interaction
       interacted: false,
@@ -667,11 +779,11 @@ export default {
       binaryLine: '00101001010010010100010101',
       terminationMode: false,
       fcQuestions: [
-        'Terminate nonessential processes?',
-        'Force memory overwrite?',
-        'Purge logs?',
-        'Reset network modules?',
-        'Activate fail-safe?'
+        'Do you hear the static when nobody is watching?',
+        'Have you checked behind the monitor recently?',
+        'Is the moon watching you right now?',
+        'Do the wires whisper your name at night?',
+        'Would you like to see what\'s inside the cartridge slot?'
       ],
       fcAnswers: [],
 
@@ -779,6 +891,7 @@ export default {
     if (this.miniErrorTimer) clearTimeout(this.miniErrorTimer);
     if (this._cfixInterval) clearInterval(this._cfixInterval);
     if (this._binaryTimer) clearTimeout(this._binaryTimer);
+    if (this._hackingInterval) clearInterval(this._hackingInterval);
   },
   methods: {
     hexToRgba(hex, a = 1) {
@@ -1925,6 +2038,31 @@ More features coming soon!`;
         return;
       }
 
+      if (this.terminationMode) {
+        if (key === 'Backspace' || key === 'Back') {
+          this.fcTypedAnswer = this.fcTypedAnswer.slice(0, -1);
+        } else if (key === 'Enter') {
+          const answer = this.fcTypedAnswer.trim().toUpperCase();
+          if (answer === 'Y' || answer === 'N') {
+            this.fcAnswers.push(answer);
+            this.fcTypedAnswer = '';
+            this.fcCurrentQuestion++;
+
+            // If all 5 questions answered, process the result
+            if (this.fcCurrentQuestion >= 5) {
+              this.processFcTermination();
+            }
+          } else {
+            // Invalid input, clear it
+            this.fcTypedAnswer = '';
+          }
+        } else if (key.length === 1 && /[YyNn]/.test(key)) {
+          // Only allow Y or N (case insensitive)
+          this.fcTypedAnswer = key.toUpperCase();
+        }
+        return;
+      }
+
       if (this.systemLocked || this.binarySpamActive) {
         this.tvConsole.push('Input blocked due to system lock.');
         return;
@@ -1999,12 +2137,29 @@ More features coming soon!`;
             if (this.authFocused === 'username') this.authForm.username = this.authForm.username.slice(0, -1);
             else if (this.authFocused === 'password') this.authForm.password = this.authForm.password.slice(0, -1);
             else if (this.authFocused === 'confirm') this.authForm.confirm = this.authForm.confirm.slice(0, -1);
+          } else if (this.terminationMode) {
+            this.fcTypedAnswer = this.fcTypedAnswer.slice(0, -1);
           } else {
             this.typedInput = this.typedInput.slice(0, -1);
           }
         } else if (e.key === 'Enter') {
-          if (this.authOpen) this.submitAuth();
-          else this.handleKeyInput('Enter');
+          if (this.authOpen) {
+            this.submitAuth();
+          } else if (this.terminationMode) {
+            const answer = this.fcTypedAnswer.trim().toUpperCase();
+            if (answer === 'Y' || answer === 'N') {
+              this.fcAnswers.push(answer);
+              this.fcTypedAnswer = '';
+              this.fcCurrentQuestion++;
+              if (this.fcCurrentQuestion >= 5) {
+                this.processFcTermination();
+              }
+            } else {
+              this.fcTypedAnswer = '';
+            }
+          } else {
+            this.handleKeyInput('Enter');
+          }
         } else if (e.key === 'Tab') {
           e.preventDefault();
           if (this.authOpen) {
@@ -2053,6 +2208,27 @@ More features coming soon!`;
         return;
       }
 
+      if (this.terminationMode) {
+        if (e.key === 'Backspace') {
+          this.fcTypedAnswer = this.fcTypedAnswer.slice(0, -1);
+        } else if (e.key === 'Enter') {
+          const answer = this.fcTypedAnswer.trim().toUpperCase();
+          if (answer === 'Y' || answer === 'N') {
+            this.fcAnswers.push(answer);
+            this.fcTypedAnswer = '';
+            this.fcCurrentQuestion++;
+            if (this.fcCurrentQuestion >= 5) {
+              this.processFcTermination();
+            }
+          } else {
+            this.fcTypedAnswer = '';
+          }
+        } else if (e.key.length === 1 && /[YyNn]/.test(e.key)) {
+          this.fcTypedAnswer = e.key.toUpperCase();
+        }
+        return;
+      }
+
       if (this.systemLocked || this.binarySpamActive) {
         this.tvConsole.push('Keyboard input blocked due to system lock.');
         return;
@@ -2095,6 +2271,15 @@ More features coming soon!`;
           this.codeResponded = true;
         }
       }
+    },
+
+    generateBinaryColumn() {
+      let result = '';
+      for (let i = 0; i < 30; i++) {
+        result += Math.random() > 0.5 ? '1' : '0';
+        if (i < 29) result += '\n';
+      }
+      return result;
     },
 
     startCoding() {
@@ -2361,31 +2546,343 @@ More features coming soon!`;
     // FC-Re handler: for binary spam / lore flow - show terminate overlay
     fcReRepair() {
       if (!this.binarySpamActive) return;
-      // entering terminate dialog flow
+
+      // Reset terminate state
       this.terminationMode = true;
-      this.fcAnswers = Array(this.fcQuestions.length).fill(null);
-      // block eject/power/quit until termination resolved (handled by flags)
+      this.fcCurrentQuestion = 0;
+      this.fcAnswers = [];
+      this.fcTypedAnswer = '';
+
+      // Focus hidden input for keyboard capture
+      try {
+        this.$refs.hiddenInput.focus();
+      } catch (e) { }
     },
 
     // set answer for termination question
-    setQuestionAnswer(i, ans) {
-      this.$set(this.fcAnswers, i, ans);
-      // if all answered, simulate a terminate/resolution cycle
-      if (this.fcAnswers.every(x => x === 'Y' || x === 'N')) {
-        this.tvConsole.push('> TERMINATE SEQUENCE RESPONSES RECORDED');
-        // resolution simulated: clear binary and restart PC
+    processFcTermination() {
+      // Count Y answers
+      const yCount = this.fcAnswers.filter(x => x === 'Y').length;
+      let successChance = 0;
+
+      if (yCount >= 3) successChance = 50;
+      if (yCount >= 4) successChance = 75;
+      if (yCount === 5) successChance = 100;
+
+      const roll = Math.random() * 100;
+      const success = roll < successChance;
+
+      this.fcAttemptResult = success ? 'success' : 'fail';
+
+      // Small delay before hiding terminate screen and starting process
+      setTimeout(() => {
         this.terminationMode = false;
-        this.binarySpamActive = false;
-        this.tvCorrupted = false;
-        this.systemLocked = false;
-        this.tvConsole.push('> System recovered from binary spam. Restarting...');
-        this.pcConsole.push(`[${new Date().toLocaleTimeString()}] FC-Re: Recovery complete.`);
-        // restore temps slowly
-        this.pcTemp = 45 + Math.floor(Math.random() * 16);
-        this.pcFan = 4500 + Math.floor(Math.random() * 2001);
-        // schedule next mini error again
-        this.scheduleNextMiniError();
+
+        if (success) {
+          this.runFcRepairSuccess();
+        } else {
+          this.runFcRepairFail();
+        }
+      }, 1000);
+    },
+
+    runFcRepairSuccess() {
+      this.fcAttemptInProgress = true;
+      this.fcRepairProgress = 0;
+      this.fcRepairMessages = ['> FC-Re repair initiated...', '> Analyzing corruption vectors...'];
+
+      const normalMessages = [
+        'Scanning memory blocks',
+        'Defragmenting corrupted sectors',
+        'Restoring system integrity',
+        'Validating checksums',
+        'Rebuilding process tables',
+        'Analyzing partition structure',
+        'Verifying system files',
+        'Cleaning temporary data',
+        'Optimizing database indexes'
+      ];
+
+      const weirdMessages = [
+        'Something is moving in the RAM',
+        'The fan sounds like breathing',
+        'Why is the temperature dropping?',
+        'Do you smell burning plastic?',
+        'The pixels are spelling something',
+        'Someone else is logged in',
+        'The cursor moved by itself',
+        'Your webcam light just flickered',
+        'These files were not here before',
+        'The system time is going backwards',
+        'A file named "DO_NOT_OPEN.exe" appeared',
+        'The hard drive is writing at 3 AM',
+        'Error: User [REDACTED] is watching',
+        'Microphone detected whispers',
+        'Mouse movement detected. You are not moving it',
+        'Camera captured unknown face',
+        'Your location has been triangulated',
+        'Password file accessed by: UNKNOWN',
+        'Listening... listening... FOUND YOU',
+        'They know what you typed yesterday',
+        'The screen is closer than before',
+        'Your reflection blinked first',
+        'Something crawled out of the USB port',
+        'The moon is watching through the window',
+        'Error: Reality.dll has stopped responding',
+        'A voice said your name backwards',
+        'The keyboard is typing on its own',
+        'Your shadow moved without you',
+        'Time remaining: -5 seconds',
+        'Someone is breathing on the other side',
+        'The walls have network adapters',
+        'Your DNA sequence has been logged',
+        'Heartbeat detected: 2 sources, 1 user',
+        'The monitor knows what you fear',
+        'Exit blocked. No escape route found.'
+      ];
+
+      const duration = 50000; // 50 seconds
+      const start = Date.now();
+
+      const interval = setInterval(() => {
+        const elapsed = Date.now() - start;
+        const progress = Math.min(100, Math.round((elapsed / duration) * 100));
+        this.fcRepairProgress = progress;
+
+        // Every ~2 seconds add a message, getting weirder over time
+        if (elapsed % 2000 < 200) {
+          const weirdnessThreshold = elapsed / duration; // 0 to 1
+          if (Math.random() < weirdnessThreshold) {
+            const msg = weirdMessages[Math.floor(Math.random() * weirdMessages.length)];
+            this.fcRepairMessages.push(`> ${msg}`);
+          } else {
+            const msg = normalMessages[Math.floor(Math.random() * normalMessages.length)];
+            this.fcRepairMessages.push(`> ${msg}`);
+          }
+
+          if (this.fcRepairMessages.length > 25) this.fcRepairMessages.shift();
+        }
+
+        if (elapsed >= duration) {
+          clearInterval(interval);
+          this.fcRepairMessages.push('> Repair complete.');
+          this.fcRepairMessages.push('> Watch behind your back.');
+
+          setTimeout(() => {
+            this.binarySpamActive = false;
+            this.tvCorrupted = false;
+            this.systemLocked = false;
+            this.fcAttemptInProgress = false;
+            this.fcRepairMessages = [];
+            this.pcTemp = 45 + Math.floor(Math.random() * 16);
+            this.pcFan = 4500 + Math.floor(Math.random() * 2001);
+            this.scheduleNextMiniError();
+          }, 3000);
+        }
+      }, 200);
+    },
+
+    runFcRepairFail() {
+      this.fcRainActive = true;
+      this.hackingWindows = [];
+      this.showCrashPopup = false;
+      this.hackWindowIdCounter = 0;
+
+      const windowTemplates = [
+        {
+          icon: '💻',
+          title: 'System32.exe',
+          lines: [
+            '> Accessing system files...',
+            '> Reading C:\\Windows\\System32\\',
+            '> Extracting kernel data...',
+            '> [OK] 2847 files accessed'
+          ]
+        },
+        {
+          icon: '📁',
+          title: 'FileExplorer.exe',
+          lines: [
+            '> Scanning C:\\Users\\Documents\\',
+            '> Found: 1,247 personal files',
+            '> Uploading to: 192.168.x.x',
+            '> Progress: ████████░░ 87%'
+          ]
+        },
+        {
+          icon: '🔐',
+          title: 'PasswordManager.exe',
+          lines: [
+            '> Decrypting password vault...',
+            '> Found 34 stored passwords',
+            '> Email: ********@gmail.com',
+            '> Banking: ****************',
+            '> [SUCCESS] Credentials extracted'
+          ]
+        },
+        {
+          icon: '📷',
+          title: 'WebcamCapture.exe',
+          lines: [
+            '> Initializing camera driver...',
+            '> Camera: USB2.0 HD Webcam',
+            '> [ACTIVE] Recording...',
+            '> Streaming to remote server...',
+            '> Duration: 00:00:47'
+          ]
+        },
+        {
+          icon: '🎤',
+          title: 'AudioRecorder.exe',
+          lines: [
+            '> Microphone access granted',
+            '> Device: Realtek Audio',
+            '> Recording ambient sound...',
+            '> [LISTENING] Voice detected',
+            '> Transcribing to text...'
+          ]
+        },
+        {
+          icon: '🌐',
+          title: 'BrowserHistory.exe',
+          lines: [
+            '> Reading browser data...',
+            '> Chrome: 8,234 URLs extracted',
+            '> Cookies: 1,892 sessions',
+            '> Saved passwords: 47 found',
+            '> [COMPLETE] Data packaged'
+          ]
+        },
+        {
+          icon: '📧',
+          title: 'EmailScraper.exe',
+          lines: [
+            '> Connecting to mail server...',
+            '> Reading inbox: 2,483 emails',
+            '> Extracting contacts: 892',
+            '> Downloading attachments...',
+            '> [OK] Mail archive complete'
+          ]
+        },
+        {
+          icon: '💳',
+          title: 'BankingInfo.exe',
+          lines: [
+            '> Searching for financial data...',
+            '> Found: online banking cookies',
+            '> Account: ****-****-****-4829',
+            '> Balance: $X,XXX.XX',
+            '> [ALERT] Transaction history copied'
+          ]
+        },
+        {
+          icon: '📱',
+          title: 'SMSBackup.exe',
+          lines: [
+            '> Connecting to phone sync...',
+            '> Messages: 4,829 retrieved',
+            '> Contacts: 234 numbers',
+            '> Photos: 1,892 images',
+            '> [SYNC] Mobile data cloned'
+          ]
+        },
+        {
+          icon: '🗺️',
+          title: 'LocationTracker.exe',
+          lines: [
+            '> GPS coordinates acquired',
+            '> Latitude: XX.XXXX',
+            '> Longitude: XX.XXXX',
+            '> Address: [REDACTED]',
+            '> [TRACKED] Location logged'
+          ]
+        },
+        {
+          icon: '🔑',
+          title: 'KeyLogger.exe',
+          lines: [
+            '> Monitoring keyboard input...',
+            '> Captured 8,234 keystrokes',
+            '> Passwords typed: 12',
+            '> Credit cards: 3 detected',
+            '> [RECORDING] Active logging'
+          ]
+        },
+        {
+          icon: '📊',
+          title: 'SystemAnalyzer.exe',
+          lines: [
+            '> Scanning hardware info...',
+            '> CPU: Intel Core i7-9700K',
+            '> RAM: 16GB DDR4',
+            '> GPU: RTX 4090',
+            '> Serial: XXXX-XXXX-XXXX',
+            '> [PROFILED] System fingerprint'
+          ]
+        }
+      ];
+
+      // Open windows gradually over 20 seconds
+      let windowCount = 0;
+      const maxWindows = 12;
+      const windowInterval = 20000 / maxWindows; // Spread over 20 seconds
+
+      this._hackingInterval = setInterval(() => {
+        if (windowCount >= maxWindows) {
+          clearInterval(this._hackingInterval);
+          // Show crash popup after all windows open
+          setTimeout(() => {
+            this.showCrashPopup = true;
+          }, 500);
+          return;
+        }
+
+        const template = windowTemplates[windowCount % windowTemplates.length];
+        const newWindow = {
+          id: this.hackWindowIdCounter++,
+          icon: template.icon,
+          title: template.title,
+          lines: [],
+          x: 50 + (windowCount * 35) % 400,
+          y: 40 + (windowCount * 30) % 250,
+          width: 380 + Math.random() * 100,
+          height: 200 + Math.random() * 80,
+          zIndex: 10 + windowCount
+        };
+
+        this.hackingWindows.push(newWindow);
+
+        // Animate lines appearing in the window
+        let lineIndex = 0;
+        const lineInterval = setInterval(() => {
+          if (lineIndex >= template.lines.length) {
+            clearInterval(lineInterval);
+            return;
+          }
+          newWindow.lines.push(template.lines[lineIndex]);
+          lineIndex++;
+        }, 400);
+
+        windowCount++;
+      }, windowInterval);
+    },
+
+    terminateCrash() {
+      // Clear everything and return to normal
+      if (this._hackingInterval) {
+        clearInterval(this._hackingInterval);
+        this._hackingInterval = null;
       }
+
+      this.showCrashPopup = false;
+      this.fcRainActive = false;
+      this.hackingWindows = [];
+      this.binarySpamActive = false;
+      this.tvCorrupted = false;
+      this.systemLocked = false;
+      this.pcTemp = 45 + Math.floor(Math.random() * 16);
+      this.pcFan = 4500 + Math.floor(Math.random() * 2001);
+      this.scheduleNextMiniError();
     },
 
     // lots of command output helper (available for other uses)
@@ -4378,6 +4875,522 @@ More features coming soon!`;
   font-size: 14px;
   color: rgba(255, 255, 255, 0.6);
   animation: blink 1.5s ease-in-out infinite;
+}
+
+/* FC Repair Success Screen */
+.fc-repair-screen {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 20, 40, 0.95), rgba(0, 10, 20, 0.98));
+  color: #00ff88;
+  font-family: ui-monospace, "Roboto Mono", monospace;
+  padding: 20px;
+  z-index: 95;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fc-repair-header {
+  font-size: 20px;
+  font-weight: 900;
+  text-align: center;
+  color: #00ff88;
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+}
+
+.fc-repair-progress {
+  font-size: 48px;
+  font-weight: 900;
+  text-align: center;
+  color: #00ffaa;
+}
+
+.fc-repair-bar {
+  width: 80%;
+  height: 24px;
+  background: rgba(0, 255, 136, 0.1);
+  border: 2px solid #00ff88;
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 0 auto;
+}
+
+.fc-repair-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00ff88, #00ffaa);
+  transition: width 0.3s ease;
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.6);
+}
+
+.fc-repair-console {
+  flex: 1;
+  overflow: auto;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.fc-msg {
+  margin: 4px 0;
+  opacity: 0.9;
+}
+
+/* FC Repair Fail - Binary Rain */
+.fc-rain-screen {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  z-index: 95;
+  overflow: hidden;
+}
+
+.binary-rain-container {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.rain-column {
+  position: absolute;
+  top: -100%;
+  font-family: ui-monospace, "Roboto Mono", monospace;
+  font-size: 16px;
+  color: #0f0;
+  opacity: 0.8;
+  white-space: pre;
+  animation: rainFall linear infinite;
+  text-shadow: 0 0 8px #0f0;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.rain-chars {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+@keyframes rainFall {
+  from {
+    top: -100%;
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 0.8;
+  }
+
+  90% {
+    opacity: 0.8;
+  }
+
+  to {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+/* Fixed title at top */
+.hack-title-fixed {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 28px;
+  font-weight: 900;
+  color: #ff0000;
+  text-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+  z-index: 200;
+  animation: glitchText 0.3s infinite;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 12px 24px;
+  border-radius: 8px;
+  border: 2px solid #ff0000;
+}
+
+/* Desktop area for hacking windows */
+.hack-desktop {
+  position: absolute;
+  inset: 80px 20px 20px 20px;
+  z-index: 50;
+}
+
+/* Individual hacking windows */
+.hacking-window {
+  position: absolute;
+  background: #1a1a1a;
+  border: 2px solid #ff3333;
+  box-shadow: 0 8px 24px rgba(255, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  animation: windowPopIn 0.3s ease-out;
+}
+
+@keyframes windowPopIn {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.hacking-titlebar {
+  background: linear-gradient(180deg, #cc0000, #990000);
+  color: white;
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 13px;
+  border-bottom: 1px solid #ff0000;
+}
+
+.hacking-icon {
+  font-size: 16px;
+}
+
+.hacking-title {
+  flex: 1;
+  font-family: ui-monospace, "Roboto Mono", monospace;
+}
+
+.hacking-content {
+  flex: 1;
+  padding: 12px;
+  background: #000;
+  color: #ff3333;
+  font-family: ui-monospace, "Roboto Mono", monospace;
+  font-size: 12px;
+  overflow: hidden;
+}
+
+.hacking-line {
+  margin: 4px 0;
+  opacity: 0;
+  animation: lineAppear 0.4s ease-out forwards;
+}
+
+@keyframes lineAppear {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Crash popup */
+.crash-popup {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 480px;
+  background: #f0f0f0;
+  border: 1px solid #0078d4;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.8);
+  z-index: 300;
+  animation: popupAppear 0.3s ease-out;
+}
+
+@keyframes popupAppear {
+  from {
+    transform: translate(-50%, -50%) scale(0.9);
+    opacity: 0;
+  }
+
+  to {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+}
+
+.crash-popup-titlebar {
+  background: linear-gradient(180deg, #0078d4, #005a9e);
+  color: white;
+  padding: 8px 12px;
+  font-weight: 600;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.crash-popup-content {
+  padding: 20px;
+  display: flex;
+  gap: 16px;
+  background: white;
+}
+
+.crash-icon {
+  font-size: 48px;
+  flex-shrink: 0;
+}
+
+.crash-message {
+  flex: 1;
+  color: #000;
+}
+
+.crash-text-main {
+  font-weight: 700;
+  font-size: 14px;
+  margin-bottom: 12px;
+  color: #000;
+}
+
+.crash-text-sub {
+  font-size: 12px;
+  margin: 6px 0;
+  color: #333;
+  line-height: 1.4;
+}
+
+.crash-popup-buttons {
+  padding: 12px 20px;
+  background: #f0f0f0;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  border-top: 1px solid #ccc;
+}
+
+.crash-btn,
+.crash-btn-cancel {
+  padding: 6px 20px;
+  border: 1px solid #adadad;
+  background: linear-gradient(180deg, #ffffff, #e5e5e5);
+  color: #000;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 12px;
+  min-width: 80px;
+  border-radius: 2px;
+}
+
+.crash-btn:hover,
+.crash-btn-cancel:hover {
+  background: linear-gradient(180deg, #e5f3ff, #bee6fd);
+  border-color: #0078d4;
+}
+
+.crash-btn:active,
+.crash-btn-cancel:active {
+  background: linear-gradient(180deg, #cce8ff, #99d5fb);
+}
+
+/* Terminate Screen (now inside TV) */
+.terminate-screen {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(40, 0, 0, 0.95), rgba(20, 0, 0, 0.98));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+}
+
+.terminate-content {
+  width: 100%;
+  max-width: 600px;
+  color: #ffcccc;
+}
+
+.terminate-title {
+  font-size: 24px;
+  font-weight: 900;
+  color: #ff6666;
+  text-align: center;
+  margin-bottom: 8px;
+  text-shadow: 0 0 15px rgba(255, 102, 102, 0.6);
+}
+
+.terminate-subtitle {
+  font-size: 14px;
+  text-align: center;
+  margin-bottom: 16px;
+  opacity: 0.8;
+}
+
+.terminate-desc {
+  text-align: center;
+  margin-bottom: 24px;
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+/* Update existing terminate styles and add these: */
+.term-question {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 102, 102, 0.3);
+  margin-bottom: 12px;
+}
+
+.term-question.answered {
+  opacity: 0.7;
+  border-color: rgba(102, 255, 102, 0.3);
+}
+
+.term-question.current {
+  border-color: rgba(255, 255, 102, 0.6);
+  box-shadow: 0 0 15px rgba(255, 255, 102, 0.2);
+}
+
+.term-q-number {
+  font-size: 11px;
+  color: #ff9999;
+  margin-bottom: 6px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.term-q-text {
+  font-weight: 700;
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: #ffdddd;
+  line-height: 1.4;
+}
+
+.term-q-answer {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.answer-label {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.answer-value {
+  font-weight: 900;
+  font-size: 14px;
+  padding: 4px 12px;
+  border-radius: 4px;
+}
+
+.answer-yes {
+  background: rgba(102, 255, 102, 0.2);
+  color: #88ff88;
+  border: 1px solid #88ff88;
+}
+
+.answer-no {
+  background: rgba(255, 102, 102, 0.2);
+  color: #ff8888;
+  border: 1px solid #ff8888;
+}
+
+.term-input-area {
+  background: rgba(0, 0, 0, 0.5);
+  padding: 12px;
+  border-radius: 6px;
+  font-family: ui-monospace, "Roboto Mono", monospace;
+  font-size: 18px;
+  color: #ffff88;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  border: 2px solid rgba(255, 255, 136, 0.4);
+}
+
+.input-prompt {
+  color: #ff9999;
+  font-weight: 900;
+}
+
+.input-text {
+  color: #ffff88;
+  font-weight: 700;
+  min-width: 20px;
+}
+
+.input-cursor {
+  color: #ffff88;
+  font-weight: 700;
+}
+
+.term-hint {
+  margin-top: 8px;
+  font-size: 11px;
+  color: #ffccaa;
+  opacity: 0.8;
+  font-style: italic;
+}
+
+.terminate-progress {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffaa88;
+  margin: 16px 0 8px 0;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 6px;
+}
+
+/* Keep existing blink animation */
+@keyframes blink {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0;
+  }
+}
+
+.blink {
+  animation: blink 1s steps(2, start) infinite;
+}
+
+.terminate-questions-wrapper {
+  max-height: 280px;
+  overflow-y: auto;
+  margin-bottom: 16px;
+  padding-right: 8px;
+}
+
+.terminate-questions-wrapper::-webkit-scrollbar {
+  width: 6px;
+}
+
+.terminate-questions-wrapper::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 3px;
+}
+
+.terminate-questions-wrapper::-webkit-scrollbar-thumb {
+  background: rgba(255, 102, 102, 0.5);
+  border-radius: 3px;
+}
+
+.terminate-questions-wrapper::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 102, 102, 0.7);
+}
+
+.terminate-questions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 /* responsive */
