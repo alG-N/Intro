@@ -152,7 +152,7 @@
                   <div v-if="authOpen" class="screen-auth">
                     <div class="auth-text">
                       <div class="auth-title" :class="{ green: true }">{{ authMode === 'login' ? 'Sign in' : 'Sign up'
-                      }}</div>
+                        }}</div>
 
                       <!-- inside <template> -> auth fields -->
                       <div class="auth-field" tabindex="0" @click="setAuthFocus('username')">
@@ -358,8 +358,8 @@
                     <!-- OFFLINE / terminal overlay when PC is off -->
                     <div v-if="!pcOn && !binarySpamActive" class="mini-offline terminal">
                       <pre>&gt; [OFFLINE] Mini-TV requires PC power.
-&gt; Please power on the PC to enable network, sound and messages.
-<span class="blink">_</span>
+            &gt; Please power on the PC to enable network, sound and messages.
+            <span class="blink">_</span>
           </pre>
                     </div>
                     <!-- error overlay (terminal themed) -->
@@ -527,6 +527,7 @@
 
 <script>
 import anime from "animejs";
+const SCALE_FACTOR = 0.67;
 
 export default {
   name: "GamerConsoleNES",
@@ -1351,7 +1352,11 @@ More features coming soon!`;
       if (!el || !el.getBoundingClientRect) return { x: 0, y: 0 };
       const r = el.getBoundingClientRect();
       const svgRect = (this.$refs.wiresSvg && this.$refs.wiresSvg.getBoundingClientRect()) || { left: 0, top: 0 };
-      return { x: r.left + r.width / 2 - svgRect.left, y: r.top + r.height / 2 - svgRect.top };
+
+      return {
+        x: (r.left + r.width / 2 - svgRect.left) / SCALE_FACTOR,
+        y: (r.top + r.height / 2 - svgRect.top) / SCALE_FACTOR
+      };
     },
     createCurvePath(a, b) {
       const dx = Math.abs(b.x - a.x);
@@ -1395,7 +1400,6 @@ More features coming soon!`;
       this.selectedIndex = index;
       const el = event.currentTarget;
 
-      // ADD NULL CHECKS HERE:
       if (!el || !this.$refs.slot) {
         console.warn('insertCartridge: Missing required elements');
         return;
@@ -1413,7 +1417,6 @@ More features coming soon!`;
       clone.style.margin = 0;
       clone.style.pointerEvents = 'none';
 
-      // ADD NULL CHECK FOR FLYER:
       if (!this.$refs.flyer) {
         console.warn('insertCartridge: Missing flyer container');
         return;
@@ -1421,8 +1424,26 @@ More features coming soon!`;
 
       this.$refs.flyer.appendChild(clone);
 
-      await anime({ targets: clone, left: `${slotRect.left + slotRect.width / 2 - rect.width / 2}px`, top: `${slotRect.top + slotRect.height / 2 - rect.height / 2}px`, scale: 0.7, rotate: '6deg', duration: 700, easing: 'easeInOutQuad' }).finished;
-      await anime({ targets: clone, translateY: [0, 6, 0], duration: 260, easing: 'easeOutElastic(1, .6)' }).finished;
+      // Apply scale factor to animation target positions
+      const targetLeft = (slotRect.left + slotRect.width - rect.width) + 350
+      const targetTop = (slotRect.top + slotRect.height - rect.height) + 10
+
+      await anime({
+        targets: clone,
+        left: `${targetLeft}px`,
+        top: `${targetTop}px`,
+        scale: 0.7,
+        duration: 700,
+        easing: 'easeInOutQuad'
+      }).finished;
+
+      await anime({
+        targets: clone,
+        translateY: [0, 6, 0],
+        duration: 260,
+        easing: 'easeOutElastic(1, .6)'
+      }).finished;
+
       clone.remove();
 
       this.inSlotIndex = index;
@@ -1795,7 +1816,6 @@ More features coming soon!`;
       }
       if (!this.isOccupied) return;
 
-      // ADD NULL CHECKS:
       if (!this.$refs.slot) {
         console.warn('ejectCartridge: Missing slot element');
         this.isOccupied = false;
@@ -1822,7 +1842,6 @@ More features coming soon!`;
       clone.style.zIndex = 9999;
       clone.style.pointerEvents = 'none';
 
-      // ADD NULL CHECK:
       if (!this.$refs.flyer) {
         console.warn('ejectCartridge: Missing flyer container');
         this.isOccupied = false;
@@ -1833,11 +1852,17 @@ More features coming soon!`;
 
       this.$refs.flyer.appendChild(clone);
 
-      const destX = rect.left;
-      const destY = rect.top;
+      const destX = rect.left + 130 * SCALE_FACTOR;
+      const destY = rect.top + 130 * SCALE_FACTOR;
 
       anime({
-        targets: clone, left: `${destX}px`, top: `${destY}px`, scale: 1, rotate: '-4deg', duration: 700, easing: 'easeInOutQuad', complete: () => {
+        targets: clone,
+        left: `${destX}px`,
+        top: `${destY}px`,
+        scale: 1,
+        duration: 700,
+        easing: 'easeInOutQuad',
+        complete: () => {
           clone.remove();
           this.isOccupied = false;
           this.inSlotIndex = null;
@@ -2421,8 +2446,8 @@ More features coming soon!`;
 .wires-overlay {
   position: fixed;
   inset: 0;
-  width: 100%;
-  height: 100%;
+  width: 200%;
+  height: 200%;
   pointer-events: none;
   z-index: -1
 }
@@ -3679,7 +3704,7 @@ More features coming soon!`;
 /* Emergency Exit Door */
 .emergency-exit {
   position: fixed;
-  bottom: 0;
+  bottom: -380px;
   left: 20px;
   z-index: 100;
   text-decoration: none;
@@ -3818,7 +3843,7 @@ More features coming soon!`;
 .gamer-poster {
   position: fixed;
   top: 120px;
-  right: 40px;
+  right: -650px;
   z-index: 50;
   transform: rotate(2deg);
   transition: transform 0.4s ease;
@@ -3862,8 +3887,8 @@ More features coming soon!`;
 /* Window with Moon */
 .night-window {
   position: fixed;
-  top: 40px;
-  right: 480px;
+  top: 10px;
+  right: -170px;
   /* Changed from 280px to 380px */
   z-index: 40;
 }
