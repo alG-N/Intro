@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router' // CHANGE THIS
 import HomePage from '../views/HomePage.vue'
 import FumoPage from '../views/FumoPage.vue'
 import GamerPage from '../views/GamerPage.vue'
@@ -46,7 +46,7 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHashHistory('/Intro/'), // CHANGE THIS - add base path
   routes,
   scrollBehavior() {
     return { top: 0, behavior: 'smooth' }
