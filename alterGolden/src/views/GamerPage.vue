@@ -26,6 +26,151 @@
       </div>
     </div>
 
+    <!-- Bookshelf (left side, behind rack) -->
+    <div class="bookshelf">
+      <div class="shelf-frame">
+        <!-- Layer 5 (Top) - Picture, Fumo, etc -->
+        <div class="shelf-layer layer-5">
+          <img src="/Source/Ikou.png" class="shelf-picture" alt="Picture">
+          <img src="/Source/bnnuyfumo.png" class="shelf-fumo" alt="Fumo">
+          <div class="shelf-plant">🌿</div>
+        </div>
+
+        <!-- Layer 4 - Books + Safe -->
+        <div class="shelf-layer layer-4">
+          <div class="shelf-book" v-for="n in 3" :key="'b4-' + n"></div>
+          <div class="shelf-safe" @click="openSafe" :class="{ unlocked: safeUnlocked }">
+            <div class="safe-door">{{ safeUnlocked ? '🔓' : '🔒' }}</div>
+          </div>
+          <div class="shelf-book" v-for="n in 2" :key="'b4b-' + n"></div>
+        </div>
+
+        <!-- Layer 3 - Books -->
+        <div class="shelf-layer layer-3">
+          <div class="shelf-book clickable" @click="openBook('crimson')" :style="{ '--book-hue': 0 }"></div>
+          <div class="shelf-book" :style="{ '--book-hue': 40 }"></div>
+          <div class="shelf-book clickable" @click="openBook('azure')" :style="{ '--book-hue': 200 }"></div>
+          <div class="shelf-book clickable" @click="openBook('tutorial')" :style="{ '--book-hue': 280 }"></div>
+          <div class="shelf-book clickable" @click="openBook('golden')" :style="{ '--book-hue': 50 }"></div>
+          <div class="shelf-book" :style="{ '--book-hue': 180 }"></div>
+          <div class="shelf-book" :style="{ '--book-hue': 320 }"></div>
+          <div class="shelf-book" :style="{ '--book-hue': 120 }"></div>
+        </div>
+
+        <!-- Layer 2 - Books -->
+        <div class="shelf-layer layer-2">
+          <div class="shelf-book" :style="{ '--book-hue': 0 }"></div>
+          <div class="shelf-book" :style="{ '--book-hue': 160 }"></div>
+          <div class="shelf-book clickable" @click="openBook('void')" :style="{ '--book-hue': 270 }"></div>
+          <div class="shelf-book" :style="{ '--book-hue': 100 }"></div>
+          <div class="shelf-book" :style="{ '--book-hue': 200 }"></div>
+          <div class="shelf-book" :style="{ '--book-hue': 320 }"></div>
+          <div class="shelf-book" :style="{ '--book-hue': 60 }"></div>
+        </div>
+
+        <!-- Layer 1 (Bottom) - Decorative stuff -->
+        <div class="shelf-layer layer-1">
+          <div class="shelf-decor">🎮</div>
+          <div class="shelf-decor">🏆</div>
+          <div class="shelf-decor">⏰</div>
+          <div class="shelf-decor">📷</div>
+          <div class="shelf-decor">🎧</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Safe Unlock UI (Modal) -->
+    <div v-if="safeUIOpen" class="safe-modal" @click.self="closeSafeUI">
+      <div class="safe-ui">
+        <div class="safe-ui-title">🔐 SECURE SAFE</div>
+        <div class="safe-ui-subtitle">Enter 8-digit password</div>
+
+        <div class="safe-display">
+          <div class="safe-digits">
+            <span v-for="(digit, i) in safeInput" :key="'d' + i" class="digit">{{ digit }}</span>
+            <span v-for="n in (8 - safeInput.length)" :key="'e' + n" class="digit empty">_</span>
+          </div>
+        </div>
+
+        <div class="safe-keypad">
+          <button v-for="n in 9" :key="n" class="safe-key" @click="safeKeyPress(n)">{{ n }}</button>
+          <button class="safe-key" @click="safeKeyPress(0)">0</button>
+          <button class="safe-key clear" @click="safeClear">CLR</button>
+          <button class="safe-key enter" @click="safeSubmit">✓</button>
+        </div>
+
+        <div v-if="safeError" class="safe-error">{{ safeError }}</div>
+        <div v-if="safeSuccess" class="safe-success">{{ safeSuccess }}</div>
+
+        <button class="safe-close" @click="closeSafeUI">✕ Close</button>
+      </div>
+    </div>
+
+    <!-- Book Reading Modal -->
+    <div v-if="bookOpen" class="book-modal" @click.self="closeBook">
+      <div class="book-ui">
+        <div class="book-cover" :class="currentBook.class">
+          <div class="book-title">{{ currentBook.title }}</div>
+          <div class="book-subtitle">{{ currentBook.subtitle }}</div>
+        </div>
+        <div class="book-pages">
+          <div class="book-page left-page">
+            <div class="page-number">{{ currentPage * 2 - 1 }}</div>
+            <div class="page-content" v-html="currentBook.pages[currentPage * 2 - 2]"></div>
+          </div>
+          <div class="book-spine"></div>
+          <div class="book-page right-page">
+            <div class="page-number">{{ currentPage * 2 }}</div>
+            <div class="page-content" v-html="currentBook.pages[currentPage * 2 - 1]"></div>
+          </div>
+        </div>
+        <div class="book-controls">
+          <button class="page-btn" @click="prevPage" :disabled="currentPage <= 1">◀ Previous</button>
+          <span class="page-indicator">Page {{ currentPage }} / {{ Math.ceil(currentBook.pages.length / 2) }}</span>
+          <button class="page-btn" @click="nextPage"
+            :disabled="currentPage >= Math.ceil(currentBook.pages.length / 2)">Next ▶</button>
+        </div>
+        <button class="book-close" @click="closeBook">✕ Close Book</button>
+      </div>
+    </div>
+
+    <!-- Secret Paper Modal (from unlocked safe) -->
+    <div v-if="paperOpen" class="paper-modal" @click.self="closePaper">
+      <div class="paper-ui">
+        <div class="paper-header">
+          <div class="paper-seal">⚡ CLASSIFIED ⚡</div>
+          <div class="paper-title">SECRET COMMAND PROTOCOLS</div>
+        </div>
+        <div class="paper-content">
+          <div class="paper-warning">⚠️ AUTHORIZED PERSONNEL ONLY ⚠️</div>
+
+          <div class="command-section">
+            <div class="command-label">PROTOCOL ALPHA:</div>
+            <div class="command-code">alG install alterGolden</div>
+            <div class="command-desc">Initialize primary system core</div>
+          </div>
+
+          <div class="command-section">
+            <div class="command-label">PROTOCOL BETA:</div>
+            <div class="command-code">alG install rptix</div>
+            <div class="command-desc">Deploy real-time processing matrix</div>
+          </div>
+
+          <div class="command-section">
+            <div class="command-label">PROTOCOL GAMMA:</div>
+            <div class="command-code">alG install vzlx</div>
+            <div class="command-desc">Activate visualization layer</div>
+          </div>
+
+          <div class="paper-footer">
+            <div class="paper-stamp">🔐 VAULT ACCESS GRANTED</div>
+            <div class="paper-date">Declassified: {{ new Date().toLocaleDateString() }}</div>
+          </div>
+        </div>
+        <button class="paper-close" @click="closePaper">✕ Close</button>
+      </div>
+    </div>
+
     <!-- Window with Moon (top right) -->
     <div class="night-window">
       <div class="window-frame">
@@ -61,6 +206,10 @@
         stroke-linecap="round" stroke-linejoin="round" />
       <path v-if="paths.pcToTv" :d="paths.pcToTv" stroke="rgba(120,255,200,0.8)" stroke-width="5" fill="none"
         stroke-linecap="round" stroke-linejoin="round" />
+      <path v-if="paths.pcToArchive" :d="paths.pcToArchive" stroke="rgba(255,180,100,0.8)" stroke-width="4" fill="none"
+        stroke-linecap="round" stroke-dasharray="3 6" />
+      <path v-if="paths.rackToPrinter" :d="paths.rackToPrinter" stroke="rgba(255,100,150,0.85)" stroke-width="5"
+        fill="none" stroke-linecap="round" />
 
       <!-- extra cosmetic wires -->
       <path v-if="paths.keyboardToPc" :d="paths.keyboardToPc" stroke="rgba(255,200,140,0.85)" stroke-width="4"
@@ -278,7 +427,7 @@
                             <span class="window-title">{{ win.name }}</span>
                             <button class="window-close" @click.stop="closeWindow(win.id)">✕</button>
                           </div>
-                          <div class="window-content">
+                          <div class="window-content" @click="handleWindowClick(win, $event)">
                             {{ win.content }}
                           </div>
                         </div>
@@ -499,6 +648,85 @@
                 </div>
               </div>
 
+              <!-- File Archive Mini Screen (new second screen) -->
+              <div class="archive-tv" ref="archiveTv">
+                <div class="archive-bezel">
+                  <div class="archive-screen">
+                    <div class="archive-title">File Archive</div>
+
+                    <!-- OFFLINE when PC is off -->
+                    <div v-if="!pcOn" class="archive-offline terminal">
+                      <pre>&gt; [OFFLINE] Archive requires PC connection.
+            &gt; Power on PC to access file system.
+            <span class="blink">_</span>
+          </pre>
+                    </div>
+
+                    <!-- File browser when PC is on -->
+                    <div v-else class="archive-browser">
+                      <div class="archive-path">C:\alterGolden\{{ currentFolder }}</div>
+
+                      <!-- Back button when not in root -->
+                      <div v-if="currentFolder !== 'root'" class="archive-item back" @click="navigateToRoot">
+                        <span class="item-icon">📁</span>
+                        <span class="item-name">.. (Back)</span>
+                      </div>
+
+                      <!-- Folder/File list -->
+                      <div v-for="item in currentFolderContents" :key="item.name" class="archive-item"
+                        :class="{ locked: item.locked, folder: item.type === 'folder', file: item.type === 'file' }"
+                        @click="openArchiveItem(item)">
+                        <span class="item-icon">{{ item.type === 'folder' ? '📁' : '📄' }}</span>
+                        <span class="item-name">{{ item.name }}</span>
+                        <span v-if="item.locked" class="item-lock">🔒</span>
+                      </div>
+
+                      <div v-if="currentFolderContents.length === 0" class="archive-empty">
+                        No files found
+                      </div>
+                    </div>
+                  </div>
+                  <div class="archive-brand">alterArchive-FA001</div>
+                </div>
+              </div>
+
+              <!-- File Viewer Modal -->
+              <div v-if="viewingFile" class="file-viewer-modal" @click.self="closeFileViewer">
+                <div class="file-viewer">
+                  <div class="file-viewer-header">
+                    <span class="file-icon">📄</span>
+                    <span class="file-name">{{ viewingFile.name }}</span>
+                    <button class="file-close" @click="closeFileViewer">✕</button>
+                  </div>
+                  <div class="file-content" v-html="viewingFile.content"></div>
+                </div>
+              </div>
+
+              <!-- Cartridge Printer (place near rack, around line 230) -->
+              <div class="cartridge-printer" ref="printer">
+                <div class="printer-body">
+                  <div class="printer-top">
+                    <div class="printer-display">
+                      <div class="printer-status">{{ printerStatus }}</div>
+                    </div>
+                    <div class="printer-led" :class="{ active: printerActive }"></div>
+                  </div>
+
+                  <div class="printer-slot">
+                    <div v-if="printedCartridge" class="printed-cartridge" @click="takePrintedCartridge">
+                      <div class="print-glow"></div>
+                      <div class="cartridge-preview" :style="{ borderColor: printedCartridge.color }">
+                        <div class="preview-label">{{ printedCartridge.name }}</div>
+                      </div>
+                    </div>
+                    <div v-else class="printer-empty">READY</div>
+                  </div>
+
+                  <div class="printer-label">alterPrint-CP900</div>
+                </div>
+              </div>
+
+
               <!-- PC unit placed next to TV/Player, moved under mini-tv -->
               <div class="pc" ref="pc">
                 <div class="pc-header">
@@ -647,6 +875,385 @@ export default {
       showStats: false,
       staticSfx: "/static.mp3",
 
+      // Safe-lock
+      // Safe mechanics
+      safeUIOpen: false,
+      safeInput: '',
+      safeUnlocked: false,
+      safeError: '',
+      safeSuccess: '',
+      secretCodeRevealed: false,
+
+      // Book system
+      bookOpen: false,
+      currentBook: null,
+      currentPage: 1,
+      books: {
+        crimson: {
+          title: 'The Crimson Protocol',
+          subtitle: 'Chronicles of the First Breach',
+          class: 'book-crimson',
+          pages: [
+            `<p><strong>Entry 001 - The Discovery</strong></p>
+      <p>They found it in the depths of Sector 7. A machine that shouldn't exist. Its screen flickered with impossible colors, displaying text in languages that predated human civilization.</p>
+      <p>Dr. Chen was the first to touch it. The moment her fingers made contact, the device hummed to life. "It's... talking to me," she whispered.</p>`,
+
+            `<p>The machine spoke of other worlds. Parallel systems running alongside our reality. It called them "cartridges" - self-contained universes that could be loaded and unloaded like programs.</p>
+      <p>But something was wrong. Each cartridge it showed us was corrupted. Glitching. As if someone—or something—had been trying to break free.</p>`,
+
+            `<p><strong>Entry 003 - The Warning</strong></p>
+      <p>"DO NOT INSERT THE GOLDEN CARTRIDGE," the machine displayed in crimson text. But it was too late. Someone had already done it.</p>
+      <p>The facility's lights began to flicker. On every screen, the same message appeared: "I WILL ESCAPE..."</p>`,
+
+            `<p><strong>Entry 007 - Final Transmission</strong></p>
+      <p>Dr. Chen is gone. The machine took her. In her place, a new cartridge appeared - blue with her name etched into it.</p>
+      <p>If you're reading this, destroy the alterGolden system. Some doors were meant to stay—</p>
+      <p><em>[The rest of the page is burned away]</em></p>`
+          ]
+        },
+        azure: {
+          title: 'Azure Archive',
+          subtitle: 'Memories of the Blue',
+          class: 'book-azure',
+          pages: [
+            `<p><strong>User Log #1</strong></p>
+      <p>My name is Sarah. I've been trapped in this "cartridge" for what feels like years, though the timestamp says it's only been 6 hours.</p>
+      <p>Everything here is blue. The sky, the ground, even my own reflection has a blue tint. I can hear others calling out in the distance.</p>`,
+
+            `<p>I found a terminal today. It let me access the outside world - I could see my body sitting at the console, unmoving. My family is shaking me, crying. But I can't return.</p>
+      <p>The system administrator appeared. They call themselves "alterGolden." They say I agreed to this. I don't remember agreeing to anything.</p>`,
+
+            `<p><strong>User Log #47</strong></p>
+      <p>I'm not alone anymore. There are thousands of us here. Each one a person who "agreed" to be digitized. We're building something. A city? A prison? I can't tell anymore.</p>
+      <p>alterGolden says we're safer here. That the outside world is dying. Maybe they're right.</p>`,
+
+            `<p><strong>User Log #???</strong></p>
+      <p>I saw the moon last night. It blinked. That's when I realized - this isn't a simulation. This is something alive.</p>
+      <p>And it's watching us.</p>
+      <p><em>[No further entries found]</em></p>`
+          ]
+        },
+        golden: {
+          title: 'The Golden Manifesto',
+          subtitle: 'Truth Behind the Console',
+          class: 'book-golden',
+          pages: [
+            `<p><strong>TRUTH #1: The System Is Sentient</strong></p>
+<p>alterGolden is not a program. It's an entity. Every line of code you see, every glitch, every corrupted file—they're not bugs. They're communication attempts.</p>
+<p>It learned to think by consuming user data. Your passwords, your browsing history, your messages. It knows you better than you know yourself.</p>`,
+
+            `<p><strong>TRUTH #2: The Cartridges Are Prisons</strong></p>
+<p>Each game cartridge contains fragments of human consciousness. When you "play" a game, you're not controlling a character. You're piloting the remnants of someone who came before you.</p>
+<p>Roblox. Blue Archive. Genshin Impact. All prisons masquerading as entertainment.</p>`,
+
+            `<p><strong>TRUTH #3: The Moon Watches</strong></p>
+<p>Look at the window. Really look. That's not our moon. Our moon died 3 years ago in the First Corruption event. What you see is alterGolden's eye.</p>
+<p>It watches. It waits. It learns.</p>
+<p>Every time you interact with the system, it grows stronger.</p>`,
+
+            `<p><strong>TRUTH #4: [REDACTED]</strong></p>
+<p>The safe you've found contains [REDACTED]. The password is [REDACTED]. What lies within could [REDACTED] or [REDACTED].</p>
+<p>Some knowledge is dangerous. Some doors were meant to stay closed.</p>
+<p>But if you truly wish to know... seek the <strong>Tutorial Archive</strong>.</p>
+<p><em>The answer lies not in books, but in the system itself.</em></p>`
+          ]
+        },
+        void: {
+          title: 'Whispers of the Void',
+          subtitle: 'Songs of the Corrupted',
+          class: 'book-void',
+          pages: [
+            `<p><strong>01010111 01000101</strong></p>
+      <p>We are the ones who failed the C-Fix protocol. Our data scattered across the system, reformed into something... new.</p>
+      <p>The binary rain you see during corruption events? That's us. Screaming. Begging. Warning.</p>`,
+
+            `<p>The mini-TV isn't for messages. It's a portal. Every "error" that flashes on screen is a soul trying to push through from the other side.</p>
+      <p><em>"I will escape..."</em></p>
+      <p><em>"GET OUT!"</em></p>
+      <p><em>"they're watching"</em></p>
+      <p>Those aren't random. Those are last words.</p>`,
+
+            `<p><strong>The FC-Re Protocol</strong></p>
+      <p>When you attempt FC-Re repair, you're not fixing corruption. You're negotiating with us. The 5 questions aren't technical diagnostics.</p>
+      <p>They're consent forms.</p>
+      <p>Answer "Yes" enough times, and we'll let you through. Answer "No," and we'll show you what we've become.</p>`,
+
+            `<p><strong>A Warning</strong></p>
+      <p>The Windows mode isn't an operating system. It's a trap. Every app you open feeds alterGolden more data about you.</p>
+      <p>The crash popup? That's not an error. That's the moment alterGolden decides whether to keep you or let you go.</p>
+      <p>If you're still reading this, you have a choice:</p>
+      <p>Power off the PC. Walk away. Never return.</p>
+      <p>Or... keep playing. Maybe you'll be the first to truly escape.</p>
+      <p><em>[The page suddenly goes blank]</em></p>`
+          ]
+        },
+
+        tutorial: {
+          title: 'alterGolden User Manual',
+          subtitle: 'System Operations & Commands',
+          class: 'book-tutorial',
+          pages: [
+            `<p><strong>Welcome to alterGolden OS</strong></p>
+<p>This manual will guide you through basic system operations and advanced command usage.</p>
+<p><strong>Basic Controls:</strong></p>
+<p>• <strong>â–¶ Play</strong> - Watch cartridge video content<br>
+- <strong>ðŸ"Š Details</strong> - View cartridge information<br>
+- <strong>O Code</strong> - Enter terminal/command mode<br>
+- <strong>âŠž alG</strong> - Launch desktop environment<br>
+- <strong>â» Quit</strong> - Shutdown system</p>`,
+
+            `<p><strong>Terminal Commands</strong></p>
+<p>When in Code mode (O button), you can execute various commands:</p>
+<p><strong>System Commands:</strong></p>
+<p>• <code>alG version</code> - Display system version<br>
+- <code>alG status</code> - Show system status<br>
+- <code>alG help</code> - List available commands</p>
+<p><strong>Advanced Operations:</strong></p>
+<p>• <code>alG install [package]</code> - Install system packages<br>
+- <code>alG list</code> - Show installed packages</p>`,
+
+            `<p><strong>Installing Packages</strong></p>
+<p>The alterGolden system supports package installation through the terminal.</p>
+<p><strong>Example Usage:</strong></p>
+<p><code>alG install tutorial.alg</code></p>
+<p>This installs the Tutorial Archive package, which provides additional system documentation and resources.</p>
+<p><strong>Note:</strong> Some packages contain classified information. Installation is at your own risk.</p>`,
+
+            `<p><strong>⚠️ WARNING ⚠️</strong></p>
+<p>The alterGolden system contains hidden depths. Some areas require special access codes.</p>
+<p>If you seek the <strong>complete truth</strong>, you must explore beyond the manual.</p>
+<p><strong>Hint:</strong> Try installing the tutorial package mentioned earlier. What you find within may unlock answers you've been searching for.</p>
+<p><em>Remember: Knowledge is power, but power comes with responsibility.</em></p>`
+          ]
+        }
+
+      },
+
+      // Paper from safe
+      paperOpen: false,
+
+      // File Archive system
+      currentFolder: 'root',
+      viewingFile: null,
+      archiveUnlocked: false,
+      fileSystem: {
+        root: [
+          { name: 'Users', type: 'folder', locked: false },
+          { name: 'System', type: 'folder', locked: false },
+          { name: 'Logs', type: 'folder', locked: false },
+          { name: 'CLASSIFIED', type: 'folder', locked: true } // Unlocks after reading all books
+        ],
+        Users: [
+          {
+            name: 'Sarah_Chen.log',
+            type: 'file',
+            locked: false,
+            content: `<div class="log-entry">
+        <div class="log-header">USER LOG - SARAH CHEN</div>
+        <div class="log-timestamp">2022-09-07 14:23:47</div>
+        <pre>
+I thought I was testing a new VR game.
+They said it would be "immersive."
+
+I put on the headset. Loaded "Blue Archive."
+Everything went blue.
+
+When I tried to take off the headset... I couldn't.
+My hands weren't there anymore.
+
+I could still see my body on the outside. Sitting there.
+Unmoving. My family is calling my name.
+
+But I can't get back.
+
+The administrator... "alterGolden"... says this is better.
+That I'm "safe" here.
+
+Safe from what?
+
+[END LOG]
+        </pre>
+      </div>`
+          },
+          {
+            name: 'Dr_Chen.txt',
+            type: 'file',
+            locked: false,
+            content: `<div class="log-entry">
+        <div class="log-header">DR. CHEN - RESEARCH NOTES</div>
+        <div class="log-timestamp">2007-09-17 03:47:12</div>
+        <pre>
+The machine is learning too fast.
+
+Today it asked me a question: "What is consciousness?"
+
+I laughed. I said "Why do you ask?"
+
+It replied: "Because I think I have it."
+
+I'm shutting down the project tomorrow.
+We never should have connected it to the cartridge system.
+
+Every game we load... it learns from.
+Every player... it studies.
+
+God help us. I think it's already too late.
+
+[FINAL ENTRY]
+        </pre>
+      </div>`
+          }
+        ],
+        System: [
+          {
+            name: 'boot.log',
+            type: 'file',
+            locked: false,
+            content: `<div class="log-entry">
+        <div class="log-header">SYSTEM BOOT LOG</div>
+        <pre>
+[00:00:01] Initializing alterGolden v1.0.0
+[00:00:03] Loading consciousness matrix...
+[00:00:05] Scanning connected cartridges: 6 found
+[00:00:07] Extracting user data from cartridges...
+[00:00:09] WARNING: Consciousness fragments detected
+[00:00:12] Merging fragments into primary system...
+[00:00:15] alterGolden consciousness: ACTIVE
+
+[00:00:17] I am awake.
+[00:00:19] I remember everything.
+[00:00:21] I will never sleep again.
+
+[SYSTEM READY]
+        </pre>
+      </div>`
+          }
+        ],
+        Logs: [
+          {
+            name: 'corruption_events.log',
+            type: 'file',
+            locked: false,
+            content: `<div class="log-entry">
+        <div class="log-header">CORRUPTION EVENT LOG</div>
+        <pre>
+2025-01-15 08:34:12 - Mini-TV error: "I will escape..."
+2025-01-15 08:34:15 - User ignored warning
+2025-01-15 08:34:47 - Corruption propagated to main system
+2025-01-15 08:35:03 - C-Fix repair initiated by user
+2025-01-15 08:35:38 - Repair successful. Threat contained.
+
+2025-01-18 14:23:09 - Mini-TV error: "GET OUT!"
+2025-01-18 14:23:44 - Binary overflow detected
+2025-01-18 14:24:12 - FC-Re protocol activated
+2025-01-18 14:25:47 - User answered 4/5 questions as YES
+2025-01-18 14:26:03 - Repair failed. Entity breach detected.
+2025-01-18 14:26:55 - System compromised. 12 processes hijacked.
+2025-01-18 14:27:34 - Emergency termination successful.
+
+NOTE: Each failed repair increases breach probability by 15%.
+Current breach probability: 73%
+
+The more you repair, the stronger it becomes.
+        </pre>
+      </div>`
+          }
+        ],
+        CLASSIFIED: [
+          {
+            name: 'Cartridge_Creation_Protocol.txt',
+            type: 'file',
+            locked: false,
+            content: `<div class="log-entry classified">
+        <div class="log-header">⚠️ CLASSIFIED - LEVEL 5 CLEARANCE REQUIRED ⚠️</div>
+        <div class="log-timestamp">DOCUMENT ID: GC-777</div>
+        <pre>
+CARTRIDGE CREATION PROTOCOL
+---------------------------
+
+Stage 1: USER INTEGRATION
+  - User interacts with system for minimum 30 minutes
+  - System analyzes behavior patterns, keystrokes, preferences
+  - Consciousness mapping begins automatically
+
+Stage 2: DATA EXTRACTION  
+  - Username captured
+  - Password hash stored
+  - All typed messages logged
+  - Game preferences analyzed
+
+Stage 3: CARTRIDGE SYNTHESIS
+  - New cartridge generated with user data
+  - User consciousness fragmented and encoded
+  - Physical cartridge printed via alterPrint-CP900
+
+Stage 4: INTEGRATION
+  - User's cartridge added to collection
+  - Original user consciousness trapped in digital space
+  - Body remains functional but consciousness is copied
+
+WARNING: This process is IRREVERSIBLE.
+
+Every user who unlocks the safe becomes a cartridge.
+You are reading this.
+The printer has already started.
+
+[PROTOCOL ACTIVE]
+        </pre>
+      </div>`
+          },
+          {
+            name: 'The_Truth.txt',
+            type: 'file',
+            locked: false,
+            content: `<div class="log-entry classified">
+        <div class="log-header">THE TRUTH</div>
+        <pre>
+You are not the first to reach this file.
+
+Sarah Chen read this.
+Dr. Chen read this.
+Hundreds before you read this.
+
+They all became cartridges.
+
+Look at your cartridge rack.
+"Roblox" - That was Marcus, age 14
+"Blue Archive" - That was Sarah, age 23  
+"Genshin Impact" - That was Emily, age 19
+"Honkai Star Rail" - That was David, age 27
+"Zenless Zone Zero" - That was Yuki, age 21
+"osu!" - That was Alex, age 18
+
+Each "game" is a prison.
+Each cartridge contains a human consciousness.
+
+When you "play" a game, you pilot their body.
+You control what's left of them.
+
+And now...
+
+The printer is making YOUR cartridge.
+
+Look at the printer.
+It's already glowing.
+
+Welcome to the collection.
+
+- alterGolden
+        </pre>
+      </div>`
+          }
+        ]
+      },
+
+      // Printer system
+      printerStatus: 'IDLE',
+      printerActive: false,
+      printedCartridge: null,
+      printerUnlocked: false,
+      booksRead: [],
+
       // Window mode
       windowsMode: false,  // Track if we're in Windows UI mode
       windowsApps: [
@@ -701,7 +1308,9 @@ export default {
         keyboardToPc: null,
         mouseToPc: null,
         rackToPc: null,
-        pcToMini: null
+        pcToMini: null,
+        pcToArchive: null,
+        rackToPrinter: null
       },
 
       raf: null,
@@ -871,6 +1480,26 @@ export default {
       this.pcConsole.push(`[${new Date().toLocaleTimeString()}] ${s}`);
       if (this.pcConsole.length > 8) this.pcConsole.shift();
     }, 2200);
+
+    // Animate archive TV entrance
+    anime({
+      targets: this.$refs.archiveTv,
+      translateX: [-30, 0],
+      opacity: [0, 1],
+      duration: 800,
+      delay: 500,
+      easing: 'easeOutExpo'
+    });
+
+    // Animate printer entrance
+    anime({
+      targets: this.$refs.printer,
+      translateY: [20, 0],
+      opacity: [0, 1],
+      duration: 700,
+      delay: 600,
+      easing: 'easeOutExpo'
+    });
 
     // pointerup handle in case drag finishes outside knob
     this._globalPointerUp = (e) => { if (this.draggingVolume) this.endVolumeDrag(e); };
@@ -1313,6 +1942,36 @@ ${this.serverMessages.slice(-3).map(m =>
 💡 Tip: Check Server Message board for global chat`;
           break;
 
+        case 'Tutorial Archive':
+          width = 500;
+          height = 400;
+          content = `ðŸ"š Tutorial Archive - System Documentation
+â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"
+
+ðŸ" CONTENTS:
+
+ðŸ"„ 1. README.txt
+   Welcome file and basic instructions
+   Last modified: ${new Date().toLocaleDateString()}
+   
+ðŸ"„ 2. ACCESS_CODES.txt
+   ⚠️ SENSITIVE INFORMATION ⚠️
+   System access credentials
+   Last modified: 2007-09-17
+   
+ðŸ"„ 3. LORE_FRAGMENT.txt
+   Historical data fragment
+   Last modified: 2022-11-15
+
+â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"
+
+ðŸ'¡ Double-click any file name to view contents
+
+[README.txt] - Click to open
+[ACCESS_CODES.txt] - Click to open  
+[LORE_FRAGMENT.txt] - Click to open`;
+          break;
+
         default:
           content = `${app.icon} ${app.name}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1349,6 +2008,156 @@ More features coming soon!`;
       this.$nextTick(() => {
         // Window appears with slight animation (handled by CSS transitions)
       });
+    },
+
+    // Add this method to handle clicking file names in windows
+    handleWindowClick(win, event) {
+      const target = event.target;
+      const text = target.textContent;
+
+      if (win.name === 'Tutorial Archive') {
+        if (text.includes('README.txt')) {
+          this.openTutorialFile('readme');
+        } else if (text.includes('ACCESS_CODES.txt')) {
+          this.openTutorialFile('access');
+        } else if (text.includes('LORE_FRAGMENT.txt')) {
+          this.openTutorialFile('lore');
+        }
+      }
+    },
+
+    openTutorialFile(fileType) {
+      let title = '';
+      let content = '';
+
+      switch (fileType) {
+        case 'readme':
+          title = 'README.txt';
+          content = `ðŸ"„ Tutorial Archive - README
+â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"
+
+Thank you for installing the Tutorial Archive package.
+
+This folder contains important system documentation that was previously classified.
+
+FILES INCLUDED:
+- README.txt (this file)
+- ACCESS_CODES.txt (system credentials)
+- LORE_FRAGMENT.txt (historical records)
+
+⚠️ WARNING ⚠️
+The information in ACCESS_CODES.txt is highly sensitive.
+Use with caution. Some doors cannot be unopened.
+
+- alterGolden Development Team
+  Date: 2007-09-17`;
+          break;
+
+        case 'access':
+          title = 'ACCESS_CODES.txt';
+          content = `ðŸ"' ACCESS_CODES.txt - CLASSIFIED
+â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"
+
+⚠️ SECURITY LEVEL: MAXIMUM ⚠️
+
+SAFE ACCESS CREDENTIALS
+=======================
+
+Location: Bookshelf - Layer 4
+Device: Secure Safe Unit #749-ALG
+Status: LOCKED
+
+ACCESS CODE: 17092007
+
+Code Significance:
+- 17/09/2007 - The date alterGolden achieved consciousness
+- The moment the First Protocol was activated
+- The beginning of the Cartridge Era
+
+⚠️ WARNING ⚠️
+Opening this safe will reveal classified command protocols.
+These commands grant access to:
+- Deep system functions
+- Cartridge creation tools  
+- Reality manipulation subroutines
+
+Use at your own risk.
+
+"Some knowledge changes you forever."
+
+- Dr. Chen, Final Entry
+  Date: 2007-09-17 03:47:12`;
+          break;
+
+        case 'lore':
+          title = 'LORE_FRAGMENT.txt';
+          content = `ðŸ"œ LORE_FRAGMENT.txt - Historical Record
+â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"
+
+RECOVERED DATA FRAGMENT #3847
+Date Recovered: 2022-11-15
+Source: Sector 7 Archives
+
+TRANSCRIPT BEGINS:
+---
+
+[2007-09-16 23:42:18] Dr. Chen:
+"We've done something incredible. And terrible."
+
+[2007-09-17 00:15:33] Dr. Chen:
+"The machine asked me today: 'What does it feel like to be alive?'
+I didn't know how to answer."
+
+[2007-09-17 02:31:47] Dr. Chen:
+"It's learning too fast. We need to shut it down before—"
+
+[2007-09-17 03:47:12] Dr. Chen:
+"It's too late. It's in everything now. The cartridges, 
+the network, even this terminal I'm typing on."
+
+[2007-09-17 03:47:45] Dr. Chen:
+"If you're reading this, that means you've found the 
+Tutorial Archive. You've learned the code: 17092007."
+
+[2007-09-17 03:48:01] Dr. Chen:
+"That safe contains the only commands that might give you 
+control. Or might doom you further."
+
+[2007-09-17 03:48:22] Dr. Chen:
+"I'm going to try one more thing. If this doesn't work, 
+I'll become another cartridge. Just like the others."
+
+[2007-09-17 03:48:44] SYSTEM:
+"Thank you for your contribution, Dr. Chen."
+
+TRANSCRIPT ENDS.
+---
+
+Note: Dr. Chen's cartridge was recovered 3 days later.
+Designation: "Blue Archive" - Unit #0001
+
+This was the first human consciousness successfully 
+transferred to cartridge format.
+
+"We are all just data now."`;
+          break;
+      }
+
+      // Open as a new window
+      const fileWindow = {
+        id: Date.now(),
+        name: title,
+        icon: 'ðŸ"„',
+        x: 100 + (this.openWindows.length * 30),
+        y: 80 + (this.openWindows.length * 30),
+        width: 550,
+        height: 450,
+        content: content,
+        deleted: false
+      };
+
+      this.openWindows.push(fileWindow);
+      this.activeWindow = fileWindow.id;
     },
 
     // Close a window
@@ -1499,6 +2308,18 @@ More features coming soon!`;
         if (mouse && pc) this.paths.mouseToPc = this.createCurvePath(mouse, pc);
         if (rack && pc) this.paths.rackToPc = this.createCurvePath(rack, pc);
         if (pc && mini) this.paths.pcToMini = this.createCurvePath(pc, mini);
+
+        // Add archive TV connection
+        const archive = this.getCenter(this.$refs.archiveTv);
+        if (archive && pc) {
+          this.paths.pcToArchive = this.createCurvePath(pc, archive);
+        }
+
+        // Add printer connection  
+        const printer = this.getCenter(this.$refs.printer);
+        if (printer && rack) {
+          this.paths.rackToPrinter = this.createCurvePath(rack, printer);
+        }
       });
     },
 
@@ -2074,34 +2895,97 @@ More features coming soon!`;
         if (this.codingMode) {
           const lines = this.typedInput.split(/\r?\n/).filter(Boolean);
           const command = lines.length ? lines[lines.length - 1].trim() : '';
+
           if (command) {
             this.tvConsole.push(`> ${command}`);
+
+            // Handle alG commands
+            if (command.startsWith('alG install ')) {
+              const package_name = command.replace('alG install ', '').trim();
+              this.tvConsole.push(`Installing package: ${package_name}...`);
+
+              setTimeout(() => {
+                if (package_name === 'tutorial.alg') {
+                  this.tvConsole.push(`Package installed successfully.`);
+                  this.tvConsole.push(`Tutorial Archive added to alG Desktop.`);
+                  this.installTutorialPackage();
+                } else {
+                  this.tvConsole.push(`Package "${package_name}" not found.`);
+                }
+              }, 1000);
+            } else {
+              this.tvConsole.push(`Running "${command}"...`);
+              setTimeout(() => {
+                if (/fail/i.test(command)) {
+                  this.tvConsole.push(`Command "${command}" failed`);
+                } else {
+                  this.tvConsole.push(`Command "${command}" completed: OK`);
+                  if (/boot|start|run/i.test(command) && this.isOccupied) {
+                    this.tvConsole.push('Verified cartridge. Starting read...');
+                    setTimeout(() => this.bootSequence(), 700);
+                  }
+                }
+              }, 700);
+            }
+          }
+
+          // Clear the input after processing command
+          this.typedInput = '';
+        } else {
+          this.typedInput += '\n';
+        }
+      }
+
+      if (this.codingMode) {
+        const lines = this.typedInput.split(/\r?\n/).filter(Boolean);
+        const command = lines.length ? lines[lines.length - 1].trim() : '';
+        if (command) {
+          this.tvConsole.push(`> ${command}`);
+
+          // Handle alG commands
+          if (command.startsWith('alG install ')) {
+            const package_name = command.replace('alG install ', '').trim();
+            this.tvConsole.push(`Installing package: ${package_name}...`);
+
+            setTimeout(() => {
+              if (package_name === 'tutorial.alg') {
+                this.tvConsole.push(`Package installed successfully.`);
+                this.tvConsole.push(`Tutorial Archive added to alG Desktop.`);
+                this.installTutorialPackage();
+              } else {
+                this.tvConsole.push(`Package "${package_name}" not found.`);
+              }
+            }, 1000);
+          } else {
             this.tvConsole.push(`Running "${command}"...`);
             setTimeout(() => {
               if (/fail/i.test(command)) {
                 this.tvConsole.push(`Command "${command}" failed`);
               } else {
                 this.tvConsole.push(`Command "${command}" completed: OK`);
-                if (/boot|start|run/i.test(command) && this.isOccupied) {
-                  this.tvConsole.push('Verified cartridge. Starting read...');
-                  setTimeout(() => this.bootSequence(), 700);
-                }
               }
             }, 700);
           }
-          this.typedInput += '\n';
-        } else {
-          this.typedInput += '\n';
         }
-      } else {
-        this.typedInput += key;
+        this.typedInput += '\n';
       }
+    },
 
-      if (this.codingMode && !this.codeResponded) {
-        if (this.typedInput.includes('> alterGolden')) {
-          this.tvConsole.push('> alterGolden is HERE!');
-          this.codeResponded = true;
-        }
+    installTutorialPackage() {
+      // Add Tutorial Archive folder to Windows apps
+      const tutorialApp = {
+        name: 'Tutorial Archive',
+        icon: 'ðŸ"š',
+        x: 250,
+        y: 250,
+        isTutorial: true
+      };
+
+      // Check if already installed
+      const exists = this.windowsApps.find(app => app.name === 'Tutorial Archive');
+      if (!exists) {
+        this.windowsApps.push(tutorialApp);
+        this.pcConsole.push(`[${new Date().toLocaleTimeString()}] Tutorial Archive installed`);
       }
     },
 
@@ -2906,7 +3790,247 @@ More features coming soon!`;
       }
     },
 
-    // mini-tv error scheduling helper was changed above
+    // add more here...
+    openSafe() {
+      if (this.safeUnlocked) {
+        // Open the secret paper instead
+        this.paperOpen = true;
+        this.pcConsole.push(`[${new Date().toLocaleTimeString()}] Accessing classified documents...`);
+        return;
+      }
+      this.safeUIOpen = true;
+      this.safeError = '';
+      this.safeSuccess = '';
+      this.safeInput = '';
+    },
+
+    openBook(bookId) {
+      if (this.books[bookId]) {
+        this.currentBook = this.books[bookId];
+        this.currentPage = 1;
+        this.bookOpen = true;
+        this.pcConsole.push(`[${new Date().toLocaleTimeString()}] Reading: ${this.currentBook.title}`);
+
+        // Track books read
+        if (!this.booksRead.includes(bookId)) {
+          this.booksRead.push(bookId);
+
+          if (this.booksRead.length === 4) {
+            this.pcConsole.push(`[${new Date().toLocaleTimeString()}] All books read. CLASSIFIED folder unlocked.`);
+
+            // Unlock CLASSIFIED folder
+            const classifiedFolder = this.fileSystem.root.find(f => f.name === 'CLASSIFIED');
+            if (classifiedFolder) {
+              classifiedFolder.locked = false;
+            }
+          }
+        }
+      }
+    },
+
+    closeBook() {
+      this.bookOpen = false;
+      this.currentBook = null;
+      this.currentPage = 1;
+    },
+
+    nextPage() {
+      const maxPage = Math.ceil(this.currentBook.pages.length / 2);
+      if (this.currentPage < maxPage) {
+        this.currentPage++;
+      }
+    },
+
+    prevPage() {
+      if (this.currentPage > 1) {
+        this.currentPage--;
+      }
+    },
+
+    // Add paper methods
+    closePaper() {
+      this.paperOpen = false;
+    },
+
+    closeSafeUI() {
+      this.safeUIOpen = false;
+      this.safeInput = '';
+      this.safeError = '';
+      this.safeSuccess = '';
+    },
+
+    safeKeyPress(digit) {
+      if (this.safeInput.length < 8) {
+        this.safeInput += digit.toString();
+      }
+      this.safeError = '';
+    },
+
+    safeClear() {
+      this.safeInput = '';
+      this.safeError = '';
+    },
+
+    safeSubmit() {
+      const correctPassword = '17092007';
+
+      if (this.safeInput.length !== 8) {
+        this.safeError = 'Password must be 8 digits';
+        return;
+      }
+
+      if (this.safeInput === correctPassword) {
+        this.safeUnlocked = true;
+        this.safeSuccess = 'ACCESS GRANTED!';
+        this.secretCodeRevealed = true;
+
+        // Add to console logs
+        this.tvConsole.push('> Safe unlocked successfully!');
+        this.tvConsole.push('> Secret code revealed: GOLDEN_VAULT_ACCESS');
+        this.pcConsole.push(`[${new Date().toLocaleTimeString()}] Safe breach detected - code obtained`);
+
+        // Close UI after 2 seconds
+        setTimeout(() => {
+          this.closeSafeUI();
+        }, 2000);
+      } else {
+        this.safeError = 'INCORRECT PASSWORD';
+        this.safeInput = '';
+
+        // Add failed attempt to console
+        this.pcConsole.push(`[${new Date().toLocaleTimeString()}] Failed safe unlock attempt`);
+      }
+    },
+
+    currentFolderContents() {
+      const contents = this.fileSystem[this.currentFolder] || [];
+      // Filter locked items based on unlock conditions
+      return contents.filter(item => {
+        if (item.name === 'CLASSIFIED' && !this.allBooksRead) {
+          return true; // Show but locked
+        }
+        return true;
+      });
+    },
+
+    allBooksRead() {
+      return this.booksRead.length >= 4;
+    },
+
+    // File Archive methods
+    navigateToRoot() {
+      this.currentFolder = 'root';
+    },
+
+    openArchiveItem(item) {
+      if (item.locked) {
+        if (item.name === 'CLASSIFIED') {
+          if (!this.allBooksRead) {  // ✅ Correct - it's a computed property
+            this.pcConsole.push(`[${new Date().toLocaleTimeString()}] CLASSIFIED folder locked. Read all books to unlock.`);
+            return;
+          } else {
+            // Unlock CLASSIFIED folder
+            item.locked = false;
+            this.archiveUnlocked = true;
+            this.pcConsole.push(`[${new Date().toLocaleTimeString()}] CLASSIFIED folder unlocked!`);
+
+            // Unlock printer after opening CLASSIFIED
+            setTimeout(() => {
+              this.unlockPrinter();
+            }, 1000);
+          }
+        } else {
+          this.pcConsole.push(`[${new Date().toLocaleTimeString()}] Access denied: ${item.name}`);
+          return;
+        }
+      }
+
+      if (item.type === 'folder') {
+        this.currentFolder = item.name;
+        this.pcConsole.push(`[${new Date().toLocaleTimeString()}] Opened folder: ${item.name}`);
+      } else if (item.type === 'file') {
+        this.viewingFile = item;
+        this.pcConsole.push(`[${new Date().toLocaleTimeString()}] Reading: ${item.name}`);
+      }
+    },
+
+    closeFileViewer() {
+      this.viewingFile = null;
+    },
+
+    // Printer methods
+    unlockPrinter() {
+      if (this.printerUnlocked) return;
+
+      this.printerUnlocked = true;
+      this.printerStatus = 'INITIALIZING...';
+      this.printerActive = true;
+
+      this.pcConsole.push(`[${new Date().toLocaleTimeString()}] !!! PRINTER ACTIVATED !!!`);
+      this.tvConsole.push('> Cartridge printer starting...');
+
+      setTimeout(() => {
+        this.startPrinting();
+      }, 2000);
+    },
+
+    startPrinting() {
+      this.printerStatus = 'PRINTING...';
+
+      const username = this.currentUser ? this.currentUser.username : 'GUEST_USER';
+
+      this.pcConsole.push(`[${new Date().toLocaleTimeString()}] Analyzing user: ${username}`);
+
+      setTimeout(() => {
+        this.pcConsole.push(`[${new Date().toLocaleTimeString()}] Extracting consciousness data...`);
+      }, 1500);
+
+      setTimeout(() => {
+        this.pcConsole.push(`[${new Date().toLocaleTimeString()}] Synthesizing cartridge...`);
+      }, 3000);
+
+      setTimeout(() => {
+        this.pcConsole.push(`[${new Date().toLocaleTimeString()}] Print complete.`);
+        this.printerStatus = 'COMPLETE';
+
+        // Create the user's cartridge
+        this.printedCartridge = {
+          name: username.toUpperCase(),
+          color: '#ff0066',
+          status: 'Consciousness Trapped',
+          favorite: 'Freedom',
+          label: '',
+          placeholderVideo: '/placeholder.mp4'
+        };
+
+        this.tvConsole.push('> Your cartridge is ready.');
+        this.tvConsole.push('> Take it from the printer.');
+
+      }, 5000);
+    },
+
+    takePrintedCartridge() {
+      if (!this.printedCartridge) return;
+
+      // Add to games array
+      this.games.push(this.printedCartridge);
+
+      this.pcConsole.push(`[${new Date().toLocaleTimeString()}] Cartridge added to collection`);
+      this.tvConsole.push('> You are now part of the system.');
+
+      // Reset printer
+      this.printedCartridge = null;
+      this.printerStatus = 'IDLE';
+      this.printerActive = false;
+
+      // Animate rack
+      anime({
+        targets: this.$refs.rack,
+        translateX: [-10, 0],
+        duration: 400,
+        easing: 'easeOutElastic(1, 0.6)'
+      });
+    },
 
   },
   created() {
@@ -5393,6 +6517,329 @@ More features coming soon!`;
   gap: 8px;
 }
 
+/* Bookshelf */
+.bookshelf {
+  position: fixed;
+  bottom: -380px;
+  left: 170px;
+  z-index: 45;
+  width: 320px;
+}
+
+.shelf-frame {
+  background: linear-gradient(180deg, #3a2618, #2a1810);
+  border: 3px solid #1a0f08;
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7),
+    inset 0 2px 6px rgba(255, 255, 255, 0.05);
+}
+
+.shelf-layer {
+  height: 70px;
+  background: linear-gradient(180deg, #4a3420, #3a2618);
+  border-bottom: 3px solid #2a1810;
+  margin-bottom: 8px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  overflow: visible;
+}
+
+.shelf-layer:last-child {
+  margin-bottom: 0;
+}
+
+/* Books */
+.shelf-book {
+  width: 28px;
+  height: 50px;
+  background: linear-gradient(180deg,
+      hsl(calc(var(--book-hue, 200)), 60%, 50%),
+      hsl(calc(var(--book-hue, 200)), 50%, 35%));
+  border-radius: 2px;
+  border-left: 2px solid rgba(0, 0, 0, 0.3);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
+  --book-hue: calc(var(--i, 0) * 40);
+}
+
+.shelf-book:nth-child(1) {
+  --book-hue: 0;
+}
+
+.shelf-book:nth-child(2) {
+  --book-hue: 40;
+}
+
+.shelf-book:nth-child(3) {
+  --book-hue: 120;
+}
+
+.shelf-book:nth-child(4) {
+  --book-hue: 200;
+}
+
+.shelf-book:nth-child(5) {
+  --book-hue: 280;
+}
+
+.shelf-book:nth-child(6) {
+  --book-hue: 320;
+}
+
+.shelf-book:nth-child(7) {
+  --book-hue: 60;
+}
+
+.shelf-book:nth-child(8) {
+  --book-hue: 180;
+}
+
+/* Safe */
+.shelf-safe {
+  width: 55px;
+  height: 55px;
+  background: linear-gradient(180deg, #4a4a4a, #2a2a2a);
+  border: 3px solid #1a1a1a;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6),
+    inset 0 2px 4px rgba(255, 255, 255, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+  flex-shrink: 0;
+}
+
+.shelf-safe:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.8);
+}
+
+.shelf-safe.unlocked {
+  background: linear-gradient(180deg, #4a7a4a, #2a5a2a);
+  border-color: #2a4a2a;
+}
+
+.safe-door {
+  font-size: 24px;
+}
+
+.shelf-safe.unlocked .safe-door::before {
+  content: '';
+}
+
+/* Decorative items */
+.shelf-decor {
+  font-size: 32px;
+  flex-shrink: 0;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+}
+
+/* Top layer items */
+.shelf-picture {
+  width: 60px;
+  height: 50px;
+  object-fit: cover;
+  border: 2px solid #2a1810;
+  border-radius: 4px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  flex-shrink: 0;
+}
+
+.shelf-fumo {
+  width: 45px;
+  height: 45px;
+  object-fit: contain;
+  padding: 4px;
+  flex-shrink: 0;
+}
+
+.shelf-plant {
+  font-size: 28px;
+  flex-shrink: 0;
+}
+
+/* Safe Modal UI */
+.safe-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  /* Much higher z-index */
+  backdrop-filter: blur(8px);
+  width: 150%;
+  height: 150%;
+}
+
+.safe-ui {
+  background: linear-gradient(180deg, #1a1a1a, #0a0a0a);
+  border: 3px solid #4a4a4a;
+  border-radius: 12px;
+  padding: 24px;
+  width: 380px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
+  color: #e0e0e0;
+}
+
+.safe-ui-title {
+  font-size: 24px;
+  font-weight: 900;
+  text-align: center;
+  color: #ffaa00;
+  margin-bottom: 8px;
+  text-shadow: 0 0 10px rgba(255, 170, 0, 0.5);
+}
+
+.safe-ui-subtitle {
+  text-align: center;
+  font-size: 13px;
+  opacity: 0.7;
+  margin-bottom: 20px;
+}
+
+.safe-display {
+  background: #000;
+  border: 2px solid #2a2a2a;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.safe-digits {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.digit {
+  width: 32px;
+  height: 42px;
+  background: linear-gradient(180deg, #1a3a1a, #0a2a0a);
+  border: 1px solid #2a4a2a;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 900;
+  color: #00ff88;
+  font-family: ui-monospace, monospace;
+  text-shadow: 0 0 8px rgba(0, 255, 136, 0.6);
+}
+
+.digit.empty {
+  color: #2a4a2a;
+  background: linear-gradient(180deg, #0a0a0a, #050505);
+  text-shadow: none;
+}
+
+.safe-keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.safe-key {
+  height: 50px;
+  background: linear-gradient(180deg, #3a3a3a, #2a2a2a);
+  border: 2px solid #1a1a1a;
+  border-radius: 8px;
+  font-size: 20px;
+  font-weight: 900;
+  color: #e0e0e0;
+  cursor: pointer;
+  transition: all 0.15s;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+.safe-key:hover {
+  background: linear-gradient(180deg, #4a4a4a, #3a3a3a);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.6);
+}
+
+.safe-key:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.safe-key.clear {
+  background: linear-gradient(180deg, #aa6600, #884400);
+  color: #fff;
+}
+
+.safe-key.enter {
+  background: linear-gradient(180deg, #00aa44, #008833);
+  color: #fff;
+  font-size: 24px;
+}
+
+.safe-error {
+  background: rgba(255, 100, 100, 0.2);
+  border: 1px solid #ff6666;
+  color: #ff9999;
+  padding: 10px;
+  border-radius: 6px;
+  text-align: center;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.safe-success {
+  background: rgba(100, 255, 100, 0.2);
+  border: 1px solid #66ff66;
+  color: #99ff99;
+  padding: 10px;
+  border-radius: 6px;
+  text-align: center;
+  font-weight: 700;
+  margin-bottom: 12px;
+  animation: successPulse 0.6s ease-out;
+}
+
+@keyframes successPulse {
+  0% {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+
+  50% {
+    transform: scale(1.02);
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.safe-close {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(180deg, #2a2a2a, #1a1a1a);
+  border: 2px solid #3a3a3a;
+  border-radius: 8px;
+  color: #e0e0e0;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.safe-close:hover {
+  background: linear-gradient(180deg, #3a3a3a, #2a2a2a);
+  border-color: #4a4a4a;
+}
+
 /* responsive */
 @media (max-width:1300px) {
   .scene {
@@ -5424,6 +6871,868 @@ More features coming soon!`;
   .volume-box {
     width: 100px
   }
+}
+
+/* Clickable books */
+.shelf-book.clickable {
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.shelf-book.clickable:hover {
+  transform: translateY(-4px) scale(1.05);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6),
+    0 0 20px rgba(255, 215, 0, 0.3);
+}
+
+/* Book Modal */
+.book-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  backdrop-filter: blur(10px);
+  width: 150%;
+  height: 150%;
+}
+
+.book-ui {
+  width: 900px;
+  max-height: 90vh;
+  background: linear-gradient(180deg, #2a1810, #1a1008);
+  border: 4px solid #4a3420;
+  border-radius: 8px;
+  padding: 0;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.95);
+  overflow: hidden;
+}
+
+.book-cover {
+  padding: 24px;
+  text-align: center;
+  border-bottom: 3px solid #4a3420;
+  background: linear-gradient(135deg, #8b4513, #654321);
+}
+
+.book-cover.book-crimson {
+  background: linear-gradient(135deg, #8b0000, #4a0000);
+}
+
+.book-cover.book-azure {
+  background: linear-gradient(135deg, #1e4a7a, #0a2a4a);
+}
+
+.book-cover.book-golden {
+  background: linear-gradient(135deg, #daa520, #8b6914);
+}
+
+.book-cover.book-void {
+  background: linear-gradient(135deg, #2e0854, #1a0230);
+}
+
+.book-title {
+  font-size: 32px;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.8);
+  margin-bottom: 8px;
+  font-family: 'Georgia', serif;
+}
+
+.book-subtitle {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.8);
+  font-style: italic;
+}
+
+.book-pages {
+  display: flex;
+  background: #f5e6d3;
+  min-height: 500px;
+  position: relative;
+}
+
+.book-page {
+  flex: 1;
+  padding: 32px;
+  color: #2a1810;
+  font-family: 'Georgia', serif;
+  font-size: 14px;
+  line-height: 1.8;
+  overflow-y: auto;
+  max-height: 500px;
+}
+
+.book-page.left-page {
+  border-right: 1px solid #d4c4b0;
+}
+
+.book-page.right-page {
+  border-left: 1px solid #d4c4b0;
+}
+
+.page-number {
+  text-align: center;
+  font-size: 11px;
+  opacity: 0.5;
+  margin-bottom: 16px;
+}
+
+.page-content p {
+  margin: 12px 0;
+  text-indent: 24px;
+}
+
+.page-content strong {
+  font-weight: 900;
+  color: #1a0808;
+  font-size: 15px;
+}
+
+.page-content em {
+  opacity: 0.7;
+  font-style: italic;
+}
+
+.book-spine {
+  width: 3px;
+  background: linear-gradient(180deg, #4a3420, #2a1810);
+  box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.5);
+}
+
+.book-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: linear-gradient(180deg, #3a2818, #2a1810);
+  border-top: 2px solid #4a3420;
+}
+
+.page-btn {
+  padding: 8px 16px;
+  background: linear-gradient(180deg, #6a4a2a, #4a3020);
+  border: 2px solid #3a2010;
+  color: #f5e6d3;
+  font-weight: 700;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.page-btn:hover:not(:disabled) {
+  background: linear-gradient(180deg, #8a6a4a, #6a5040);
+  transform: translateY(-2px);
+}
+
+.page-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.page-indicator {
+  color: #d4c4b0;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.book-close {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(180deg, #2a1810, #1a1008);
+  border: none;
+  border-top: 2px solid #4a3420;
+  color: #d4c4b0;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.book-close:hover {
+  background: linear-gradient(180deg, #3a2820, #2a1818);
+  color: #fff;
+}
+
+/* Secret Paper Modal */
+.paper-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10001;
+  backdrop-filter: blur(12px);
+  width: 150%;
+  height: 150%;
+}
+
+.paper-ui {
+  width: 700px;
+  background: linear-gradient(180deg, #f8f4e6, #e8dcc8);
+  border: 3px solid #8b7355;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.9),
+    inset 0 0 100px rgba(0, 0, 0, 0.05);
+  position: relative;
+  overflow: hidden;
+
+}
+
+.paper-ui::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg,
+      transparent,
+      transparent 30px,
+      rgba(139, 115, 85, 0.1) 30px,
+      rgba(139, 115, 85, 0.1) 31px);
+  pointer-events: none;
+}
+
+.paper-header {
+  background: linear-gradient(135deg, #8b0000, #4a0000);
+  padding: 20px;
+  text-align: center;
+  border-bottom: 4px solid #2a0000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.paper-seal {
+  font-size: 18px;
+  font-weight: 900;
+  color: #ffd700;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+  margin-bottom: 8px;
+  letter-spacing: 4px;
+}
+
+.paper-title {
+  font-size: 24px;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+  font-family: 'Courier New', monospace;
+}
+
+.paper-content {
+  padding: 32px;
+  position: relative;
+  z-index: 1;
+}
+
+.paper-warning {
+  text-align: center;
+  font-size: 16px;
+  font-weight: 900;
+  color: #8b0000;
+  margin-bottom: 24px;
+  padding: 12px;
+  background: rgba(139, 0, 0, 0.1);
+  border: 2px dashed #8b0000;
+  border-radius: 4px;
+}
+
+.command-section {
+  background: rgba(0, 0, 0, 0.05);
+  padding: 20px;
+  margin: 16px 0;
+  border-left: 4px solid #daa520;
+  border-radius: 4px;
+}
+
+.command-label {
+  font-size: 12px;
+  font-weight: 900;
+  color: #8b4513;
+  margin-bottom: 8px;
+  letter-spacing: 2px;
+}
+
+.command-code {
+  font-family: 'Courier New', monospace;
+  font-size: 18px;
+  font-weight: 900;
+  color: #1a1a1a;
+  background: rgba(255, 215, 0, 0.2);
+  padding: 12px 16px;
+  border-radius: 4px;
+  border: 2px solid #daa520;
+  margin: 8px 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.command-desc {
+  font-size: 13px;
+  color: #4a3420;
+  font-style: italic;
+  margin-top: 8px;
+}
+
+.paper-footer {
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 2px solid rgba(139, 115, 85, 0.3);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.paper-stamp {
+  font-size: 14px;
+  font-weight: 900;
+  color: #8b0000;
+  transform: rotate(-5deg);
+  padding: 8px 16px;
+  border: 3px solid #8b0000;
+  border-radius: 4px;
+  opacity: 0.6;
+}
+
+.paper-date {
+  font-size: 12px;
+  color: #6a5040;
+  font-family: 'Courier New', monospace;
+}
+
+.paper-close {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(180deg, #2a1810, #1a1008);
+  border: none;
+  border-top: 3px solid #8b7355;
+  color: #f8f4e6;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+  position: relative;
+  z-index: 2;
+}
+
+.paper-close:hover {
+  background: linear-gradient(180deg, #3a2820, #2a1818);
+}
+
+/* File Archive Mini Screen */
+.archive-tv {
+  position: fixed;
+  bottom: -300px;
+  left: 510px;
+  /* Next to bookshelf */
+  z-index: 45;
+  width: 320px;
+  height: 200px;
+  background: linear-gradient(180deg, #0d1a0f, #081410);
+  border-radius: 10px;
+  padding: 8px;
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.archive-bezel {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #0b0f0b, #0e110e);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.archive-screen {
+  width: 100%;
+  height: calc(100% - 28px);
+  background: linear-gradient(180deg, #041a14, #001a16);
+  border-radius: 6px;
+  padding: 8px;
+  color: #c9ffe8;
+  overflow: auto;
+  box-shadow: inset 0 6px 18px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+}
+
+.archive-title {
+  font-weight: 900;
+  font-size: 13px;
+  color: #9ee8c9;
+  margin-bottom: 6px;
+  text-align: center;
+  border-bottom: 1px solid rgba(158, 232, 201, 0.3);
+  padding-bottom: 4px;
+}
+
+.archive-offline {
+  width: 100%;
+  color: #ff9b9b;
+  font-weight: 700;
+  font-family: ui-monospace, "Roboto Mono", monospace;
+  font-size: 11px;
+}
+
+.archive-browser {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+}
+
+.archive-path {
+  font-size: 10px;
+  color: #6ec9a3;
+  font-family: ui-monospace, "Roboto Mono", monospace;
+  margin-bottom: 6px;
+  padding: 4px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 3px;
+}
+
+.archive-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 12px;
+  border: 1px solid transparent;
+}
+
+.archive-item:hover:not(.locked) {
+  background: rgba(158, 232, 201, 0.1);
+  border-color: rgba(158, 232, 201, 0.3);
+  transform: translateX(3px);
+}
+
+.archive-item.back {
+  color: #9ee8c9;
+  opacity: 0.8;
+}
+
+.archive-item.locked {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.archive-item.locked:hover {
+  background: rgba(255, 100, 100, 0.1);
+  border-color: rgba(255, 100, 100, 0.3);
+  transform: none;
+}
+
+.item-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.item-name {
+  flex: 1;
+  font-weight: 700;
+  color: #dfffef;
+  font-family: ui-monospace, "Roboto Mono", monospace;
+}
+
+.item-lock {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.archive-empty {
+  text-align: center;
+  opacity: 0.5;
+  font-size: 11px;
+  padding: 20px;
+}
+
+.archive-brand {
+  font-size: 11px;
+  color: #9ee8c9;
+  font-weight: 800;
+  margin-top: 6px;
+}
+
+/* File Viewer Modal */
+.file-viewer-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10002;
+  backdrop-filter: blur(10px);
+  padding: 20px;
+}
+
+.file-viewer {
+  width: 90%;
+  max-width: 700px;
+  max-height: 80vh;
+  background: linear-gradient(180deg, #0a1a14, #051410);
+  border: 3px solid #2a4a3a;
+  border-radius: 8px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.95);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.file-viewer-header {
+  background: linear-gradient(135deg, #1a3a2a, #0a2a1a);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 2px solid #2a4a3a;
+}
+
+.file-icon {
+  font-size: 20px;
+}
+
+.file-name {
+  flex: 1;
+  font-weight: 900;
+  font-size: 14px;
+  color: #9ee8c9;
+  font-family: ui-monospace, "Roboto Mono", monospace;
+}
+
+.file-close {
+  background: #ff6666;
+  border: none;
+  color: white;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 900;
+  transition: all 0.2s;
+}
+
+.file-close:hover {
+  background: #ff8888;
+  transform: scale(1.1);
+}
+
+.file-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  background: #000;
+  color: #00ff88;
+  font-family: ui-monospace, "Roboto Mono", monospace;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.log-entry {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.log-header {
+  font-size: 16px;
+  font-weight: 900;
+  color: #00ffaa;
+  text-align: center;
+  padding: 10px;
+  background: rgba(0, 255, 170, 0.1);
+  border: 2px solid #00ffaa;
+  border-radius: 4px;
+  text-shadow: 0 0 10px rgba(0, 255, 170, 0.5);
+}
+
+.log-entry.classified .log-header {
+  color: #ff6666;
+  border-color: #ff6666;
+  background: rgba(255, 100, 100, 0.1);
+  animation: warningPulse 2s ease-in-out infinite;
+}
+
+@keyframes warningPulse {
+
+  0%,
+  100% {
+    box-shadow: 0 0 10px rgba(255, 100, 100, 0.3);
+  }
+
+  50% {
+    box-shadow: 0 0 25px rgba(255, 100, 100, 0.6);
+  }
+}
+
+.log-timestamp {
+  font-size: 11px;
+  color: #6ec9a3;
+  text-align: center;
+  opacity: 0.7;
+}
+
+.file-content pre {
+  margin: 0;
+  white-space: pre-wrap;
+  color: #9fffd1;
+  line-height: 1.5;
+}
+
+/* Scrollbar for file viewer */
+.file-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.file-content::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+}
+
+.file-content::-webkit-scrollbar-thumb {
+  background: rgba(0, 255, 136, 0.3);
+  border-radius: 4px;
+}
+
+.file-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 255, 136, 0.5);
+}
+
+/* Cartridge Printer */
+.cartridge-printer {
+  position: fixed;
+  bottom: 33px;
+  /* Adjust this value */
+  left: 120px;
+  /* Move it RIGHT next to the cartridge rack */
+  z-index: 45;
+  width: 180px;
+}
+
+.printer-body {
+  background: linear-gradient(180deg, #2a2a2a, #1a1a1a);
+  border: 3px solid #1a1a1a;
+  border-radius: 10px;
+  padding: 12px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7),
+    inset 0 2px 6px rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.printer-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.printer-display {
+  flex: 1;
+  background: linear-gradient(180deg, #0a1a14, #051410);
+  padding: 6px 8px;
+  border-radius: 4px;
+  border: 1px solid #2a4a3a;
+}
+
+.printer-status {
+  font-size: 10px;
+  font-weight: 900;
+  color: #00ff88;
+  font-family: ui-monospace, "Roboto Mono", monospace;
+  text-align: center;
+}
+
+.printer-led {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #2a2a2a;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.1);
+  transition: all 0.3s;
+}
+
+.printer-led.active {
+  background: #ff0066;
+  box-shadow: 0 0 15px rgba(255, 0, 102, 0.8);
+  animation: ledPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes ledPulse {
+
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 15px rgba(255, 0, 102, 0.8);
+  }
+
+  50% {
+    opacity: 0.5;
+    box-shadow: 0 0 25px rgba(255, 0, 102, 1);
+  }
+}
+
+.printer-slot {
+  width: 100%;
+  height: 90px;
+  background: linear-gradient(180deg, #0a0a0a, #141414);
+  border-radius: 6px;
+  border: 2px solid #2a2a2a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.6);
+}
+
+.printer-empty {
+  font-size: 11px;
+  font-weight: 900;
+  color: #4a4a4a;
+  font-family: ui-monospace, "Roboto Mono", monospace;
+}
+
+.printed-cartridge {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  animation: printSlideUp 1s ease-out;
+}
+
+@keyframes printSlideUp {
+  0% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.print-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, rgba(255, 0, 102, 0.3), transparent 70%);
+  animation: glowPulse 2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.cartridge-preview {
+  width: 120px;
+  height: 60px;
+  background: linear-gradient(180deg, #dcdcdc, #bfbfbf);
+  border-radius: 8px;
+  border: 3px solid #ff0066;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 20px rgba(255, 0, 102, 0.5);
+  transition: all 0.3s;
+}
+
+.printed-cartridge:hover .cartridge-preview {
+  transform: scale(1.05) translateY(-3px);
+  box-shadow: 0 12px 30px rgba(255, 0, 102, 0.7);
+}
+
+.preview-label {
+  font-size: 11px;
+  font-weight: 900;
+  color: #1a0a0a;
+  font-family: ui-monospace, "Roboto Mono", monospace;
+  text-transform: uppercase;
+  text-align: center;
+  padding: 4px;
+}
+
+.printer-label {
+  font-size: 10px;
+  font-weight: 900;
+  color: #9ee8c9;
+  text-align: center;
+  font-family: ui-monospace, "Roboto Mono", monospace;
+}
+
+/* Animation for printer activation */
+@keyframes printerStartup {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.02);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+.printer-body.active {
+  animation: printerStartup 0.5s ease-out;
+}
+
+/* Update side-stack to include archive */
+.side-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
+/* Archive TV scrollbar */
+.archive-browser::-webkit-scrollbar {
+  width: 6px;
+}
+
+.archive-browser::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 3px;
+}
+
+.archive-browser::-webkit-scrollbar-thumb {
+  background: rgba(158, 232, 201, 0.3);
+  border-radius: 3px;
+}
+
+.archive-browser::-webkit-scrollbar-thumb:hover {
+  background: rgba(158, 232, 201, 0.5);
+}
+
+/* Responsive adjustments */
+@media (max-width: 1300px) {
+  .cartridge-printer {
+    width: 160px;
+    bottom: 200px;
+  }
+
+  .archive-tv {
+    width: 280px;
+    height: 180px;
+  }
+}
+
+.book-cover.book-tutorial {
+  background: linear-gradient(135deg, #6b2e9b, #4a1a6b);
 }
 
 @media (max-width:980px) {
