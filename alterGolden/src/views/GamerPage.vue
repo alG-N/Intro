@@ -162,6 +162,12 @@
             <div class="command-desc">Activate visualization layer</div>
           </div>
 
+          <div class="command-section">
+            <div class="command-label">SECRET KEY:</div>
+            <div class="command-code">alG SECRET_KEY 783920</div>
+            <div class="command-desc">Execute this command in Code mode to retrieve classified passwords</div>
+          </div>
+
           <div class="paper-footer">
             <div class="paper-stamp">🔐 VAULT ACCESS GRANTED</div>
             <div class="paper-date">Declassified: {{ new Date().toLocaleDateString() }}</div>
@@ -662,7 +668,19 @@
           </pre>
                     </div>
 
-                    <!-- File browser when PC is on -->
+                    <!-- LOCKED message when File Archiver is locked -->
+                    <div v-else-if="fileArchiverLocked" class="archive-locked terminal">
+                      <pre>&gt; [LOCKED] File Archive Access Denied
+            &gt;
+            &gt; This system is protected.
+            &gt; Use command: alG ACCESS FILE_ARCHIVER
+            &gt;
+            &gt; Password required for access.
+            <span class="blink">_</span>
+          </pre>
+                    </div>
+
+                    <!-- File browser when unlocked -->
                     <div v-else class="archive-browser">
                       <div class="archive-path">C:\alterGolden\{{ currentFolder }}</div>
 
@@ -676,7 +694,7 @@
                       <div v-for="item in currentFolderContents" :key="item.name" class="archive-item"
                         :class="{ locked: item.locked, folder: item.type === 'folder', file: item.type === 'file' }"
                         @click="openArchiveItem(item)">
-                        <span class="item-icon">{{ item.type === 'folder' ? '📁' : '📄' }}</span>
+                        <span class="item-icon">{{ item.type === 'folder' ? '📂' : '📄' }}</span>
                         <span class="item-name">{{ item.name }}</span>
                         <span v-if="item.locked" class="item-lock">🔒</span>
                       </div>
@@ -883,6 +901,13 @@ export default {
       safeError: '',
       safeSuccess: '',
       secretCodeRevealed: false,
+
+      // Secret key system
+      secretKeyRevealed: false,
+      labTestDownloaded: false,
+      fileArchiverLocked: true,
+      fileArchiverPasswordEntered: false,
+      awaitingFileArchiverPassword: false,
 
       // Book system
       bookOpen: false,
@@ -1624,12 +1649,19 @@ Welcome to the collection.
       let width = 400;
       let height = 300;
 
+      // Handle LabTest.txt file FIRST before switch
+      if (app.isLabTest && app.fileContent) {
+        width = 600;
+        height = 500;
+        content = app.fileContent;
+      }
       // Generate content based on app type with enhanced formatting
-      switch (app.name) {
-        case 'File Explorer':
-          width = 450;
-          height = 350;
-          content = `📁 File Explorer
+      else {
+        switch (app.name) {
+          case 'File Explorer':
+            width = 450;
+            height = 350;
+            content = `📁 File Explorer
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📂 Quick Access
@@ -1667,14 +1699,14 @@ Welcome to the collection.
 📂 Downloads/
   📦 setup.exe (45 MB)
   📦 update_patch.zip (128 MB)`;
-          break;
+            break;
 
-        case 'Recycle Bin':
-          width = 380;
-          height = 280;
-          const deletedItems = this.openWindows.filter(w => w.deleted);
-          content = deletedItems.length > 0
-            ? `🗑️ Recycle Bin
+          case 'Recycle Bin':
+            width = 380;
+            height = 280;
+            const deletedItems = this.openWindows.filter(w => w.deleted);
+            content = deletedItems.length > 0
+              ? `🗑️ Recycle Bin
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📊 Contains: ${deletedItems.length} item(s)
@@ -1686,7 +1718,7 @@ ${deletedItems.map(w => `  ❌ ${w.name} (Deleted)`).join('\n')}
 
 💡 Tip: Close windows to send them here
 🔄 Items can be restored manually`
-            : `🗑️ Recycle Bin
+              : `🗑️ Recycle Bin
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ✅ Recycle Bin is empty
@@ -1695,12 +1727,12 @@ ${deletedItems.map(w => `  ❌ ${w.name} (Deleted)`).join('\n')}
 
 💡 No items to display
 🔄 Deleted windows will appear here`;
-          break;
+            break;
 
-        case 'My Computer':
-          width = 480;
-          height = 380;
-          content = `💻 My Computer - System Information
+          case 'My Computer':
+            width = 480;
+            height = 380;
+            content = `💻 My Computer - System Information
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 🖥️ SYSTEM SPECIFICATIONS
@@ -1746,12 +1778,12 @@ DVD Drive (D:)
   Temperature: ${this.pcOn ? this.pcTemp + '°C' : 'N/A'}
   Fan Speed: ${this.pcOn ? this.pcFan + ' RPM' : 'N/A'}
   Uptime: ${this.pcOn ? 'Active' : 'System Offline'}`;
-          break;
+            break;
 
-        case 'Notepad':
-          width = 500;
-          height = 350;
-          content = `📝 Untitled - Notepad
+          case 'Notepad':
+            width = 500;
+            height = 350;
+            content = `📝 Untitled - Notepad
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Welcome to alterGolden Notepad!
@@ -1779,12 +1811,12 @@ Type your notes here...
 
 
 `;
-          break;
+            break;
 
-        case 'Mail':
-          width = 520;
-          height = 400;
-          content = `📬 Mail - Inbox (3)
+          case 'Mail':
+            width = 520;
+            height = 400;
+            content = `📬 Mail - Inbox (3)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📧 From: alterGolden
@@ -1838,12 +1870,12 @@ Type your notes here...
    favorite titles. New content, patches, and events await!
    
    Happy Gaming!`;
-          break;
+            break;
 
-        case 'Internet':
-          width = 550;
-          height = 420;
-          content = `🌐 alG Browser - Home
+          case 'Internet':
+            width = 550;
+            height = 420;
+            content = `🌐 alG Browser - Home
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 🔍 Search or enter web address...
@@ -1890,12 +1922,12 @@ Security: ${this.pcOn ? '🔒 Protected' : 'N/A'}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 💡 Tip: Use Ctrl+T for new tab, Ctrl+W to close`;
-          break;
+            break;
 
-        case 'Message':
-          width = 480;
-          height = 380;
-          content = `💬 alG Messenger
+          case 'Message':
+            width = 480;
+            height = 380;
+            content = `💬 alG Messenger
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📱 CONVERSATIONS
@@ -1929,7 +1961,7 @@ Security: ${this.pcOn ? '🔒 Protected' : 'N/A'}
 💬 RECENT MESSAGES
 
 ${this.serverMessages.slice(-3).map(m =>
-            `${m.user}: ${m.text}`).join('\n')}
+              `${m.user}: ${m.text}`).join('\n')}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -1940,40 +1972,40 @@ ${this.serverMessages.slice(-3).map(m =>
 └──────────────────────────────────────────────────┘
 
 💡 Tip: Check Server Message board for global chat`;
-          break;
+            break;
 
-        case 'Tutorial Archive':
-          width = 500;
-          height = 400;
-          content = `ðŸ"š Tutorial Archive - System Documentation
-â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"
+          case 'Tutorial Archive':
+            width = 500;
+            height = 400;
+            content = `📚 Tutorial Archive - System Documentation
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-ðŸ" CONTENTS:
+📁 CONTENTS:
 
-ðŸ"„ 1. README.txt
+📄 1. README.txt
    Welcome file and basic instructions
    Last modified: ${new Date().toLocaleDateString()}
    
-ðŸ"„ 2. ACCESS_CODES.txt
+📄 2. ACCESS_CODES.txt
    ⚠️ SENSITIVE INFORMATION ⚠️
    System access credentials
    Last modified: 2007-09-17
    
-ðŸ"„ 3. LORE_FRAGMENT.txt
+📄 3. LORE_FRAGMENT.txt
    Historical data fragment
    Last modified: 2022-11-15
 
-â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-ðŸ'¡ Double-click any file name to view contents
+💡 Double-click any file name to view contents
 
 [README.txt] - Click to open
 [ACCESS_CODES.txt] - Click to open  
 [LORE_FRAGMENT.txt] - Click to open`;
-          break;
+            break;
 
-        default:
-          content = `${app.icon} ${app.name}
+          default:
+            content = `${app.icon} ${app.name}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 This application is currently under development.
@@ -1983,6 +2015,7 @@ Status: Ready
 Version: 1.0.0
 
 More features coming soon!`;
+        }
       }
 
       // Create new window with staggered position
@@ -2013,8 +2046,24 @@ More features coming soon!`;
     // Add this method to handle clicking file names in windows
     handleWindowClick(win, event) {
       const target = event.target;
-      const text = target.textContent;
 
+      // Check if clicked element has data-file attribute (direct click)
+      if (target.dataset && target.dataset.file) {
+        const fileType = target.dataset.file;
+        this.openTutorialFile(fileType);
+        return;
+      }
+
+      // Check if clicked inside an element with data-file (child element click)
+      const fileItem = target.closest('[data-file]');
+      if (fileItem && fileItem.dataset.file) {
+        const fileType = fileItem.dataset.file;
+        this.openTutorialFile(fileType);
+        return;
+      }
+
+      // Legacy text-based detection (fallback - can be removed)
+      const text = target.textContent;
       if (win.name === 'Tutorial Archive') {
         if (text.includes('README.txt')) {
           this.openTutorialFile('readme');
@@ -2029,12 +2078,14 @@ More features coming soon!`;
     openTutorialFile(fileType) {
       let title = '';
       let content = '';
+      let icon = '📄'; // Default file icon
 
       switch (fileType) {
         case 'readme':
           title = 'README.txt';
-          content = `ðŸ"„ Tutorial Archive - README
-â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"
+          icon = '📄';
+          content = `📄 Tutorial Archive - README
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Thank you for installing the Tutorial Archive package.
 
@@ -2055,8 +2106,9 @@ Use with caution. Some doors cannot be unopened.
 
         case 'access':
           title = 'ACCESS_CODES.txt';
-          content = `ðŸ"' ACCESS_CODES.txt - CLASSIFIED
-â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"
+          icon = '🔒';
+          content = `🔒 ACCESS_CODES.txt - CLASSIFIED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ⚠️ SECURITY LEVEL: MAXIMUM ⚠️
 
@@ -2091,8 +2143,9 @@ Use at your own risk.
 
         case 'lore':
           title = 'LORE_FRAGMENT.txt';
-          content = `ðŸ"œ LORE_FRAGMENT.txt - Historical Record
-â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"â"
+          icon = '📜';
+          content = `📜 LORE_FRAGMENT.txt - Historical Record
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 RECOVERED DATA FRAGMENT #3847
 Date Recovered: 2022-11-15
@@ -2143,11 +2196,11 @@ transferred to cartridge format.
           break;
       }
 
-      // Open as a new window
+      // Open as a new window with correct icon per file
       const fileWindow = {
         id: Date.now(),
         name: title,
-        icon: 'ðŸ"„',
+        icon: icon, // Use the file-specific icon
         x: 100 + (this.openWindows.length * 30),
         y: 80 + (this.openWindows.length * 30),
         width: 550,
@@ -2851,7 +2904,7 @@ transferred to cartridge format.
           else if (this.authFocused === 'confirm') this.authForm.confirm = this.authForm.confirm.slice(0, -1);
         } else if (key === 'Enter') {
           this.submitAuth();
-        } else {
+        } else if (key.length === 1) {
           if (this.authFocused === 'username') this.authForm.username += key;
           else if (this.authFocused === 'password') this.authForm.password += key;
           else if (this.authFocused === 'confirm') this.authForm.confirm += key;
@@ -2868,17 +2921,13 @@ transferred to cartridge format.
             this.fcAnswers.push(answer);
             this.fcTypedAnswer = '';
             this.fcCurrentQuestion++;
-
-            // If all 5 questions answered, process the result
             if (this.fcCurrentQuestion >= 5) {
               this.processFcTermination();
             }
           } else {
-            // Invalid input, clear it
             this.fcTypedAnswer = '';
           }
         } else if (key.length === 1 && /[YyNn]/.test(key)) {
-          // Only allow Y or N (case insensitive)
           this.fcTypedAnswer = key.toUpperCase();
         }
         return;
@@ -2891,15 +2940,78 @@ transferred to cartridge format.
 
       if (key === 'Backspace' || key === 'Back') {
         this.typedInput = this.typedInput.slice(0, -1);
-      } else if (key === 'Enter') {
+        return;
+      }
+
+      if (key === 'Enter') {
         if (this.codingMode) {
-          const lines = this.typedInput.split(/\r?\n/).filter(Boolean);
-          const command = lines.length ? lines[lines.length - 1].trim() : '';
+          const command = this.typedInput.trim();
 
           if (command) {
             this.tvConsole.push(`> ${command}`);
 
-            // Handle alG commands
+            // Handle SECRET_KEY command
+            if (command === 'alG SECRET_KEY 783920') {
+              this.tvConsole.push(`Validating secret key...`);
+
+              setTimeout(() => {
+                this.tvConsole.push(`✓ Secret key accepted`);
+                this.tvConsole.push(`Generating LabTest.txt...`);
+
+                setTimeout(() => {
+                  this.downloadLabTest();
+                  this.tvConsole.push(`✓ LabTest.txt downloaded successfully`);
+                }, 800);
+              }, 600);
+
+              this.typedInput = '';
+              return;
+            }
+
+            // Handle FILE_ARCHIVER access command
+            if (command === 'alG ACCESS FILE_ARCHIVER') {
+              if (!this.labTestDownloaded) {
+                this.tvConsole.push(`ERROR: LabTest.txt required. Use SECRET_KEY first.`);
+                this.typedInput = '';
+                return;
+              }
+
+              if (this.fileArchiverPasswordEntered) {
+                this.tvConsole.push(`File Archiver is already unlocked.`);
+                this.typedInput = '';
+                return;
+              }
+
+              this.tvConsole.push(`File Archiver is locked.`);
+              this.tvConsole.push(`Please enter password:`);
+              this.awaitingFileArchiverPassword = true;
+              this.typedInput = '';
+              return;
+            }
+
+            // Handle password entry for File Archiver
+            if (this.awaitingFileArchiverPassword) {
+              if (command === 'F001-2928') {
+                this.tvConsole.push(`✓ Password accepted`);
+                this.tvConsole.push(`Unlocking File Archiver...`);
+                this.fileArchiverPasswordEntered = true;
+                this.fileArchiverLocked = false;
+                this.awaitingFileArchiverPassword = false;
+
+                setTimeout(() => {
+                  this.tvConsole.push(`✓ File Archiver unlocked successfully`);
+                  this.tvConsole.push(`Access granted to Archive TV`);
+                }, 800);
+              } else {
+                this.tvConsole.push(`✗ Incorrect password`);
+                this.tvConsole.push(`Please enter password:`);
+              }
+
+              this.typedInput = '';
+              return;
+            }
+
+            // Handle alG install commands
             if (command.startsWith('alG install ')) {
               const package_name = command.replace('alG install ', '').trim();
               this.tvConsole.push(`Installing package: ${package_name}...`);
@@ -2913,50 +3025,12 @@ transferred to cartridge format.
                   this.tvConsole.push(`Package "${package_name}" not found.`);
                 }
               }, 1000);
-            } else {
-              this.tvConsole.push(`Running "${command}"...`);
-              setTimeout(() => {
-                if (/fail/i.test(command)) {
-                  this.tvConsole.push(`Command "${command}" failed`);
-                } else {
-                  this.tvConsole.push(`Command "${command}" completed: OK`);
-                  if (/boot|start|run/i.test(command) && this.isOccupied) {
-                    this.tvConsole.push('Verified cartridge. Starting read...');
-                    setTimeout(() => this.bootSequence(), 700);
-                  }
-                }
-              }, 700);
+
+              this.typedInput = '';
+              return;
             }
-          }
 
-          // Clear the input after processing command
-          this.typedInput = '';
-        } else {
-          this.typedInput += '\n';
-        }
-      }
-
-      if (this.codingMode) {
-        const lines = this.typedInput.split(/\r?\n/).filter(Boolean);
-        const command = lines.length ? lines[lines.length - 1].trim() : '';
-        if (command) {
-          this.tvConsole.push(`> ${command}`);
-
-          // Handle alG commands
-          if (command.startsWith('alG install ')) {
-            const package_name = command.replace('alG install ', '').trim();
-            this.tvConsole.push(`Installing package: ${package_name}...`);
-
-            setTimeout(() => {
-              if (package_name === 'tutorial.alg') {
-                this.tvConsole.push(`Package installed successfully.`);
-                this.tvConsole.push(`Tutorial Archive added to alG Desktop.`);
-                this.installTutorialPackage();
-              } else {
-                this.tvConsole.push(`Package "${package_name}" not found.`);
-              }
-            }, 1000);
-          } else {
+            // Default command handling
             this.tvConsole.push(`Running "${command}"...`);
             setTimeout(() => {
               if (/fail/i.test(command)) {
@@ -2966,8 +3040,18 @@ transferred to cartridge format.
               }
             }, 700);
           }
+
+          // Clear input after processing
+          this.typedInput = '';
+        } else {
+          this.typedInput += '\n';
         }
-        this.typedInput += '\n';
+        return;
+      }
+
+      // Add character to input
+      if (key.length === 1) {
+        this.typedInput += key;
       }
     },
 
@@ -2986,6 +3070,52 @@ transferred to cartridge format.
       if (!exists) {
         this.windowsApps.push(tutorialApp);
         this.pcConsole.push(`[${new Date().toLocaleTimeString()}] Tutorial Archive installed`);
+      }
+    },
+
+    downloadLabTest() {
+      this.labTestDownloaded = true;
+
+      const labTestContent = `CLASSIFIED LABORATORY TEST RESULTS
+───────────────────────────────────────────────────
+
+🔒 ACCESS CODES DATABASE
+
+Test Subject Passwords:
+───────────────────────────────────────────────────
+
+1. ADMIN_001: A7X9-KL23
+2. SYS_ROOT: B4N8-PM56
+3. FILE_ARCHIVER: F001-2928
+4. PRINT_ACCESS: P339-RT71
+5. VAULT_MASTER: V882-QW45
+
+───────────────────────────────────────────────────
+
+⚠️ WARNING: Unauthorized access is prohibited
+📅 Generated: ${new Date().toLocaleString()}
+
+Usage:
+- Use "alG ACCESS <system_name>" to access locked systems
+- Enter the corresponding password when prompted
+
+───────────────────────────────────────────────────`;
+
+      // Instead of downloading, add it as a desktop file in alG Windows
+      const labTestApp = {
+        name: 'LabTest.txt',
+        icon: '📄',
+        x: 350,
+        y: 50,
+        isLabTest: true,
+        fileContent: labTestContent
+      };
+
+      // Check if already added
+      const exists = this.windowsApps.find(app => app.name === 'LabTest.txt');
+      if (!exists) {
+        this.windowsApps.push(labTestApp);
+        this.pcConsole.push(`[${new Date().toLocaleTimeString()}] LabTest.txt created on desktop`);
       }
     },
 
@@ -3015,7 +3145,6 @@ transferred to cartridge format.
       // Stop propagation so outer handlers don't duplicate
       e.stopPropagation();
       if (e.key === 'Backspace' || e.key === 'Enter' || e.key === 'Tab' || e.key === 'CapsLock') {
-        // Let global logic handle these via explicit functions
         if (e.key === 'Backspace') {
           if (this.authOpen) {
             if (this.authFocused === 'username') this.authForm.username = this.authForm.username.slice(0, -1);
@@ -3042,6 +3171,7 @@ transferred to cartridge format.
               this.fcTypedAnswer = '';
             }
           } else {
+            // Call handleKeyInput for Enter in coding mode
             this.handleKeyInput('Enter');
           }
         } else if (e.key === 'Tab') {
@@ -3118,32 +3248,15 @@ transferred to cartridge format.
         return;
       }
 
-      // normal typed input handling when not using hiddenInput
+      // REMOVED: All the duplicate command handling code from here
+      // Now only handleKeyInput processes commands
+
+      // Normal typed input handling when not using hiddenInput
       if (e.key === 'Backspace') {
         this.typedInput = this.typedInput.slice(0, -1);
       } else if (e.key === 'Enter') {
-        if (this.codingMode) {
-          const lines = this.typedInput.split(/\r?\n/).filter(Boolean);
-          const command = lines.length ? lines[lines.length - 1].trim() : '';
-          if (command) {
-            this.tvConsole.push(`> ${command}`);
-            this.tvConsole.push(`Running "${command}"...`);
-            setTimeout(() => {
-              if (/fail/i.test(command)) {
-                this.tvConsole.push(`Command "${command}" failed`);
-              } else {
-                this.tvConsole.push(`Command "${command}" completed: OK`);
-                if (/boot|start|run/i.test(command) && this.isOccupied) {
-                  this.tvConsole.push('Verified cartridge. Starting read...');
-                  setTimeout(() => this.bootSequence(), 700);
-                }
-              }
-            }, 700);
-          }
-          this.typedInput += '\n';
-        } else {
-          this.typedInput += '\n';
-        }
+        // Just call handleKeyInput instead of duplicating logic
+        this.handleKeyInput('Enter');
       } else if (e.key.length === 1) {
         const ch = this.capsLock ? e.key.toUpperCase() : e.key;
         this.typedInput += ch;
@@ -3323,8 +3436,8 @@ transferred to cartridge format.
         this.scheduleNextMiniError();
         return;
       }
-      // choose between real error and lore (25% lore)
-      const isLore = Math.random() < 0.25;
+      // choose between real error and lore (45% lore)
+      const isLore = Math.random() < 0.45;
       this.miniErrorIsLore = isLore;
       if (isLore) {
         this.miniErrorText = this.miniLoreMessages[Math.floor(Math.random() * this.miniLoreMessages.length)];
@@ -3333,8 +3446,8 @@ transferred to cartridge format.
       }
       this.miniErrorActive = true;
 
-      // determine if this error will corrupt the main system: 15% chance
-      const willCorrupt = Math.random() < 0.15;
+      // determine if this error will corrupt the main system: 30% chance
+      const willCorrupt = Math.random() < 0.30;
       if (willCorrupt) {
         // small delay and then apply corruption state
         setTimeout(() => {
@@ -3923,9 +4036,21 @@ transferred to cartridge format.
     },
 
     openArchiveItem(item) {
+      // Check if File Archiver is locked
+      if (this.fileArchiverLocked && !this.pcOn) {
+        this.pcConsole.push(`[${new Date().toLocaleTimeString()}] File Archive requires PC connection.`);
+        return;
+      }
+
+      if (this.fileArchiverLocked) {
+        this.pcConsole.push(`[${new Date().toLocaleTimeString()}] File Archive is locked. Use "alG ACCESS FILE_ARCHIVER" command.`);
+        this.tvConsole.push('> File Archive locked. Access denied.');
+        return;
+      }
+
       if (item.locked) {
         if (item.name === 'CLASSIFIED') {
-          if (!this.allBooksRead) {  // ✅ Correct - it's a computed property
+          if (!this.allBooksRead) {
             this.pcConsole.push(`[${new Date().toLocaleTimeString()}] CLASSIFIED folder locked. Read all books to unlock.`);
             return;
           } else {
@@ -3933,11 +4058,6 @@ transferred to cartridge format.
             item.locked = false;
             this.archiveUnlocked = true;
             this.pcConsole.push(`[${new Date().toLocaleTimeString()}] CLASSIFIED folder unlocked!`);
-
-            // Unlock printer after opening CLASSIFIED
-            setTimeout(() => {
-              this.unlockPrinter();
-            }, 1000);
           }
         } else {
           this.pcConsole.push(`[${new Date().toLocaleTimeString()}] Access denied: ${item.name}`);
@@ -7716,6 +7836,18 @@ transferred to cartridge format.
 
 .archive-browser::-webkit-scrollbar-thumb:hover {
   background: rgba(158, 232, 201, 0.5);
+}
+
+.archive-locked {
+  width: 100%;
+  color: #ffaa66;
+  font-weight: 700;
+  font-family: ui-monospace, "Roboto Mono", monospace;
+  font-size: 11px;
+}
+
+.archive-locked pre {
+  line-height: 1.4;
 }
 
 /* Responsive adjustments */
